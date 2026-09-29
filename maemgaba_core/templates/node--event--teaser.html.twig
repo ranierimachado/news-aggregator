@@ -1,0 +1,79 @@
+{#
+/**
+ * @file
+ * Event teaser: a full-width featured card for the home hero, or a compact
+ * card for the events grid.
+ *
+ * Provided by maemgaba_core; a theme overrides it by copying this file to
+ * its own templates/ directory (see docs/maemgaba_core-module-guide.md).
+ *
+ * Variables beyond core's node template (set in
+ * EventPreprocessor::preprocessNode()):
+ * - is_featured: TRUE for the home hero (HomeController sets #is_home_hero).
+ * - category: uppercased topic label, or ''.
+ * - buckets: list of {key, label, short_label, color, count, perc, ...}.
+ * - spectrum_bar: render array (large for the hero, small for the grid).
+ * - total_sources, balance_score, balance_label, time_ago.
+ * - summary_text: the neutral summary as plain text (Twig escapes it).
+ */
+#}
+{%
+  set classes = [
+    'event-teaser',
+    is_featured ? 'event-teaser--featured' : 'event-teaser--grid',
+  ]
+%}
+<article{{ attributes.addClass(classes) }}>
+  {% if is_featured %}
+    <div class="event-teaser__featured-layout">
+      <div class="event-teaser__main">
+        <div class="event-teaser__meta">
+          <span class="event-teaser__featured-label">{{ 'Featured'|t }}</span>
+          {% if category %}<span class="event-teaser__category">{{ category }}</span>{% endif %}
+        </div>
+        <h2 class="event-teaser__title"><a href="{{ url }}">{{ label }}</a></h2>
+        <div class="event-teaser__summary">
+          {{ summary_text|length > 200 ? summary_text|slice(0, 200) ~ '…' : summary_text }}
+        </div>
+        <a href="{{ url }}" class="event-teaser__link">{{ 'See perspectives →'|t }}</a>
+      </div>
+
+      <div class="event-teaser__stats">
+        <div class="event-teaser__count-box">
+          <span class="event-teaser__count-number">{{ total_sources }}</span>
+          <span class="event-teaser__count-label">{{ 'Articles<br>published'|t }}</span>
+        </div>
+        {{ spectrum_bar }}
+        <div class="event-teaser__counts-inline">
+          {% for bucket in buckets %}
+            <span class="count-item count-item--{{ bucket.key }}" style="--bucket-color: var(--bucket-{{ bucket.key }}-color, {{ bucket.color }})"><span class="dot"></span>{{ bucket.count }} <span>{{ bucket.short_label }}</span></span>
+          {% endfor %}
+        </div>
+        <div class="event-teaser__balance-row">
+          <div class="event-teaser__balance">
+            <span>{{ 'Balance'|t }}</span> <strong>{{ balance_score }}</strong> <span>{{ balance_label }}</span>
+          </div>
+          <span class="event-teaser__time-ago">{{ time_ago }}</span>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div class="event-teaser__grid-header">
+      {% if category %}<span class="event-teaser__category">{{ category }}</span>{% endif %}
+      <span class="event-teaser__bias-badge-small">{{ balance_label }} · {{ balance_score }}</span>
+    </div>
+    <h2 class="event-teaser__title"><a href="{{ url }}">{{ label }}</a></h2>
+    <div class="event-teaser__summary">
+      {{ summary_text|length > 130 ? summary_text|slice(0, 130) ~ '…' : summary_text }}
+    </div>
+    <div class="event-teaser__grid-footer">
+      <span class="event-teaser__count-articles"><strong>{{ total_sources }}</strong><span class="lbl">{{ 'Articles'|t }} · {{ time_ago }}</span></span>
+      <span class="event-teaser__counts-dots">
+        {% for bucket in buckets %}
+          <span class="count-pair"><span class="dot dot--{{ bucket.key }}" style="--bucket-color: var(--bucket-{{ bucket.key }}-color, {{ bucket.color }})"></span>{{ bucket.count }}</span>
+        {% endfor %}
+      </span>
+    </div>
+    {{ spectrum_bar }}
+  {% endif %}
+</article>

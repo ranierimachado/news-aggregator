@@ -1,0 +1,186 @@
+# web/modules/custom/maemgaba_core/maemgaba_core.routing.yml
+maemgaba_core.home:
+  path: '/home'
+  defaults:
+    _controller: '\Drupal\maemgaba_core\Controller\HomeController::home'
+    _title_callback: '\Drupal\maemgaba_core\Controller\HomeController::title'
+  requirements:
+    _permission: 'access content'
+
+maemgaba_core.home_more:
+  path: '/home/more/{page}'
+  defaults:
+    _controller: '\Drupal\maemgaba_core\Controller\HomeController::more'
+    page: 1
+  requirements:
+    _permission: 'access content'
+    page: \d+
+
+maemgaba_core.sources:
+  path: '/sources'
+  defaults:
+    _controller: '\Drupal\maemgaba_core\Controller\SourcesController::list'
+    _title: 'Sources'
+  requirements:
+    _permission: 'access content'
+
+maemgaba_core.busca:
+  path: '/search'
+  defaults:
+    _controller: '\Drupal\maemgaba_core\Controller\SearchController::search'
+    _title: 'Semantic search'
+  requirements:
+    _maemgaba_search_access: 'TRUE'
+
+maemgaba_core.ask:
+  path: '/ask'
+  defaults:
+    _controller: '\Drupal\maemgaba_core\Controller\AskController::page'
+    _title: 'Ask the data'
+  methods: [GET, POST]
+  requirements:
+    _access: 'TRUE'
+  options:
+    no_cache: TRUE
+
+maemgaba_core.suggest:
+  path: '/suggest-correction'
+  defaults:
+    _form: '\Drupal\maemgaba_core\Form\SuggestionForm'
+    _title: 'Suggest a correction'
+  requirements:
+    _access: 'TRUE'
+
+maemgaba_core.suggest_thanks:
+  path: '/suggest-correction/thanks'
+  defaults:
+    _controller: '\Drupal\maemgaba_core\Controller\SuggestionController::thanks'
+    _title: 'Thank you'
+  requirements:
+    _access: 'TRUE'
+
+maemgaba_core.contact:
+  path: '/contact'
+  defaults:
+    _form: '\Drupal\maemgaba_core\Form\ContactForm'
+    _title: 'Contact'
+  requirements:
+    _access: 'TRUE'
+
+maemgaba_core.evaluator_register:
+  path: '/evaluator'
+  defaults:
+    _form: '\Drupal\maemgaba_core\Form\EvaluatorRegisterForm'
+    _title: 'Become an evaluator'
+  requirements:
+    _access: 'TRUE'
+
+maemgaba_core.methodology:
+  path: '/methodology'
+  defaults:
+    _controller: '\Drupal\maemgaba_core\Controller\MethodologyController::page'
+    _title: 'Methodology'
+  requirements:
+    _permission: 'access content'
+
+maemgaba_core.consensus_synthesize:
+  path: '/node/{node}/consensus'
+  defaults:
+    _controller: '\Drupal\maemgaba_core\Controller\ConsensusController::synthesize'
+  methods: [POST]
+  requirements:
+    _permission: 'access content'
+    node: \d+
+  options:
+    parameters:
+      node:
+        type: entity:node
+
+maemgaba_core.pipeline:
+  path: '/admin/config/services/news-engine/pipeline'
+  defaults:
+    _form: '\Drupal\maemgaba_core\Form\PipelineForm'
+    _title: 'News Engine pipeline'
+  requirements:
+    _permission: 'administer news engine pipeline'
+
+maemgaba_core.rubric:
+  path: '/admin/config/services/news-engine/rubric'
+  defaults:
+    _form: '\Drupal\maemgaba_core\Form\RubricForm'
+    _title: 'Bias rubric'
+  requirements:
+    _permission: 'administer ai prompts'
+
+maemgaba_core.operation_models:
+  path: '/admin/config/services/news-engine/operation-models'
+  defaults:
+    _form: '\Drupal\maemgaba_core\Form\OperationModelsForm'
+    _title: 'AI models per operation'
+  requirements:
+    _permission: 'administer news engine pipeline'
+
+maemgaba_core.suggestions:
+  path: '/admin/config/services/news-engine/suggestions'
+  defaults:
+    _controller: '\Drupal\maemgaba_core\Controller\SuggestionsAdminController::list'
+    _title: 'Correction suggestions'
+  requirements:
+    _permission: 'moderate news engine suggestions'
+
+maemgaba_core.suggestion_decide:
+  path: '/admin/config/services/news-engine/suggestions/{id}/{decision}'
+  defaults:
+    _form: '\Drupal\maemgaba_core\Form\SuggestionDecideForm'
+    _title: 'Decide suggestion'
+  requirements:
+    _permission: 'moderate news engine suggestions'
+    id: \d+
+    decision: 'accept|reject'
+
+maemgaba_core.ai_stats:
+  path: '/admin/config/services/news-engine/ai-stats'
+  defaults:
+    _controller: '\Drupal\maemgaba_core\Controller\AiStatsController::page'
+    _title: 'AI stats'
+  requirements:
+    _permission: 'view news engine ai stats'
+
+maemgaba_core.semantic_search_mariadb:
+  path: '/admin/config/services/news-engine/semantic-search-mariadb'
+  defaults:
+    _form: '\Drupal\maemgaba_core\Form\SemanticSearchMariaDbForm'
+    _title: 'Semantic search with MariaDB'
+  requirements:
+    _permission: 'administer news engine semantic search'
+
+# Outbound link: logs the click (ClickLog) and 302s to the article. Every
+# hit must reach PHP to be counted, so the route is never cached.
+maemgaba_core.out:
+  path: '/out/{node}'
+  defaults:
+    _controller: '\Drupal\maemgaba_core\Controller\OutboundController::out'
+  methods: [GET, HEAD]
+  requirements:
+    _entity_access: 'node.view'
+    node: \d+
+  options:
+    no_cache: TRUE
+    parameters:
+      node:
+        type: entity:node
+
+# Event-page view beacon (navigator.sendBeacon): the click-through denominator.
+maemgaba_core.out_view:
+  path: '/out/view/{node}'
+  defaults:
+    _controller: '\Drupal\maemgaba_core\Controller\OutboundController::view'
+  methods: [POST]
+  requirements:
+    _entity_access: 'node.view'
+    node: \d+
+  options:
+    no_cache: TRUE
+    parameters:
+      node:
+        type: entity:node

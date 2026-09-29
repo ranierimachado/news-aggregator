@@ -1,0 +1,20 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_raw_html_body
+    - node.type.inbound_queue
+  module:
+    - text
+id: node.inbound_queue.field_raw_html_body
+field_name: field_raw_html_body
+entity_type: node
+bundle: inbound_queue
+label: 'Raw HTML Body'
+description: 'The scraped text extracted from the source.'
+required: false
+translatable: false
+default_value: {}
+default_value_callback: ''
+settings: {}
+field_type: text_long

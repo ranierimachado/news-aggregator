@@ -1,0 +1,7 @@
+langcode: en
+status: true
+dependencies: {}
+name: Sources
+vid: sources
+description: 'News outlets mapped to their historical political biases.'
+weight: 0

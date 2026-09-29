@@ -1,0 +1,143 @@
+views:
+  -
+    name: ask_sources
+    description: 'One row per published source article (a "source" is one outlet''s article about a story).'
+    columns:
+      -
+        name: source_id
+        description: 'Source id (integer).'
+      -
+        name: story_id
+        description: 'The story it belongs to (ask_stories.story_id).'
+      -
+        name: outlet
+        description: "Outlet name as displayed, e.g. 'Fox News', 'The New York Times'."
+      -
+        name: section
+        description: "'news' or 'opinion'."
+      -
+        name: score
+        description: 'Bias score the AI assigned to this article, integer from -2 (left) to +2 (right). NULL if unscored.'
+      -
+        name: bucket
+        description: 'Bias bucket of the score (see the bucket list).'
+      -
+        name: confidence
+        description: 'Model confidence in the score, 0 to 1.'
+      -
+        name: partial_text
+        description: '1 when only the headline and abstract were available (paywall or robots.txt), else 0.'
+      -
+        name: syndicated
+        description: '1 when the article reprints another source (wire copy), else 0.'
+      -
+        name: is_reprint
+        description: '1 when it reprints another source on the same story. Reprints are listed but not counted as perspectives.'
+      -
+        name: is_opinion
+        description: '1 for opinion pieces. Opinion is shown apart and not counted as a perspective.'
+      -
+        name: is_perspective
+        description: '1 for original news reporting with a score: what the site counts as a perspective.'
+      -
+        name: topic
+        description: 'Topic key of the article (see the topic list).'
+      -
+        name: published_at
+        description: "When the site published it (local date and time, DATETIME). The outlet's own publication time is not stored."
+      -
+        name: day
+        description: 'Local date of published_at (DATE).'
+  -
+    name: ask_stories
+    description: 'One row per published story (an event covered by one or more outlets).'
+    columns:
+      -
+        name: story_id
+        description: 'Story id (integer).'
+      -
+        name: title
+        description: 'Story headline written by the site.'
+      -
+        name: published_at
+        description: 'When the story was first published on the site (local DATETIME).'
+      -
+        name: day
+        description: 'Local date of published_at (DATE).'
+      -
+        name: topic
+        description: 'Topic key of the story (see the topic list).'
+      -
+        name: relevance
+        description: "'relevant', 'maybe' or 'irrelevant' (the site's public-interest rating)."
+      -
+        name: source_count
+        description: 'All sources on the story, including opinion and reprints.'
+      -
+        name: perspective_count
+        description: 'Sources counted as perspectives (news, not reprints, with a score).'
+      -
+        name: opinion_count
+        description: 'Opinion pieces on the story.'
+      -
+        name: reprint_count
+        description: 'Reprints on the story.'
+      -
+        name: outlet_count
+        description: 'Distinct outlets among the perspectives.'
+      -
+        name: has_summary
+        description: '1 when the story has a neutral summary.'
+      -
+        name: has_consensus
+        description: '1 when the site has written "where they agree / where they differ" for the story.'
+  -
+    name: ask_outlets
+    description: 'One row per feed in the outlet registry. An outlet with a news and an opinion feed has two rows.'
+    columns:
+      -
+        name: outlet
+        description: 'Outlet name, the same text as ask_sources.outlet.'
+      -
+        name: section
+        description: "'news' or 'opinion'."
+      -
+        name: prior_score
+        description: "The outlet's published bias rating (AllSides), integer from -2 (left) to +2 (right)."
+      -
+        name: prior_bucket
+        description: 'Bias bucket of prior_score.'
+      -
+        name: prior_source
+        description: "Where prior_score comes from, e.g. 'AllSides 2026-09'."
+      -
+        name: active
+        description: '1 when the feed is currently harvested.'
+      -
+        name: partial_text
+        description: '1 when the outlet only gives headline and abstract.'
+  -
+    name: ask_daily
+    description: 'One row per local day that has any story or source.'
+    columns:
+      -
+        name: day
+        description: 'Local date (DATE).'
+      -
+        name: stories
+        description: 'Stories first published that day.'
+      -
+        name: sources
+        description: 'Sources published that day, all kinds.'
+      -
+        name: perspectives
+        description: 'Perspectives published that day.'
+      -
+        name: opinion
+        description: 'Opinion pieces published that day.'
+bucket_column: 'Perspectives in the @label bucket.'
+notes:
+  - 'Join ask_sources to ask_stories on story_id. Join ask_sources to ask_outlets on both outlet and section.'
+  - 'A source''s own bias is score/bucket; an outlet''s usual bias is prior_score/prior_bucket. "Left sources" means bucket left or lean_left unless the question names one bucket.'
+  - '"Stories" are rows of ask_stories; "sources", "articles" or "coverage" are rows of ask_sources; count perspectives with is_perspective = 1 when the question is about the bias of coverage.'
+  - 'Dates are local. "Today" is CURDATE(); "this week" starts on Monday: day >= CURDATE() - INTERVAL WEEKDAY(CURDATE()) DAY; "last 7 days": day > CURDATE() - INTERVAL 7 DAY.'

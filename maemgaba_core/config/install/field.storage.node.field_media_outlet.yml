@@ -1,0 +1,18 @@
+langcode: pt-br
+status: true
+dependencies:
+  module:
+    - node
+id: node.field_media_outlet
+field_name: field_media_outlet
+entity_type: node
+type: string
+module: core
+settings:
+  max_length: 255
+  is_ascii: false
+  case_sensitive: false
+cardinality: 1
+translatable: false
+persist_with_no_fields: false
+custom_storage: false

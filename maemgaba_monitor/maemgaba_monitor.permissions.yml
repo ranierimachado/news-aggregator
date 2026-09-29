@@ -1,0 +1,4 @@
+view news engine cost monitor:
+  title: 'View News Engine cost monitor'
+  description: 'View the daily/monthly AI cost and usage dashboard.'
+  restrict access: true

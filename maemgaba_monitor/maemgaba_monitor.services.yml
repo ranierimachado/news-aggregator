@@ -1,0 +1,11 @@
+# web/modules/custom/maemgaba_monitor/maemgaba_monitor.services.yml
+services:
+  maemgaba_monitor.cost_report:
+    class: Drupal\maemgaba_monitor\Service\CostReportService
+    arguments: ['@database', '@maemgaba_core.ai_pricing', '@datetime.time']
+
+  maemgaba_monitor.cost_commands:
+    class: Drupal\maemgaba_monitor\Drush\Commands\MaemgabaCostCommands
+    arguments: ['@maemgaba_monitor.cost_report']
+    tags:
+      - { name: drush.command }

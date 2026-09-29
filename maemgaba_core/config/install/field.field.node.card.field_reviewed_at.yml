@@ -1,0 +1,18 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_reviewed_at
+    - node.type.card
+id: node.card.field_reviewed_at
+field_name: field_reviewed_at
+entity_type: node
+bundle: card
+label: Reviewed at
+description: 'Timestamp of the last second-layer review (QueueProcessor::reviewCards()). Empty = not reviewed yet. Maintained automatically; do not edit by hand.'
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: timestamp

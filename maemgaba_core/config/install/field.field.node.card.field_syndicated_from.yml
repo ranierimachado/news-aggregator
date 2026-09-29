@@ -1,0 +1,26 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_syndicated_from
+    - node.type.card
+id: node.card.field_syndicated_from
+field_name: field_syndicated_from
+entity_type: node
+bundle: card
+label: 'Syndicated From'
+description: "The original card this is a wire-service reprint of (AP/Reuters syndication), so it doesn't count as a separate perspective."
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:node'
+  handler_settings:
+    target_bundles:
+      card: card
+    sort:
+      field: _none
+      direction: ASC
+    auto_create: false
+field_type: entity_reference

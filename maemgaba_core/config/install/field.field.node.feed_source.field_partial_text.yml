@@ -1,0 +1,20 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_partial_text
+    - node.type.feed_source
+id: node.feed_source.field_partial_text
+field_name: field_partial_text
+entity_type: node
+bundle: feed_source
+label: 'Partial Text'
+description: "The feed's article pages are known to be unusable (paywall, timeout, Readability failure): articles are classified from the headline and feed abstract without fetching the page."
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'Yes'
+  off_label: 'No'
+field_type: boolean

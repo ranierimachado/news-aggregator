@@ -1,0 +1,52 @@
+title: 'How [site_name] works'
+lede: '[site_name] does not write news. It gathers what outlets across the political spectrum published about the same event and puts those versions side by side, so you can see where they agree, where they differ, and what each framing chose to stress or leave out.'
+pipeline_label: 'The pipeline, from feed to page'
+steps:
+  -
+    icon: dots
+    title: Outlets
+    description: 'Declared editorial lines across the spectrum'
+  -
+    icon: feed
+    title: Collection
+    description: 'RSS feeds read continuously, article by article'
+  -
+    icon: spectrum
+    title: Classification
+    description: 'AI reads each article and scores its framing'
+  -
+    icon: event
+    title: Event
+    description: 'Articles about the same fact converge on a neutral summary'
+  -
+    icon: bars
+    title: Ranking
+    description: 'Broad, recent coverage rises; the rest decays'
+  -
+    icon: consensus
+    title: Consensus
+    description: 'What everyone reports · what is disputed'
+nav_label: 'Methodology sections'
+sections:
+  -
+    id: sources
+    title: 'Where the news comes from'
+    body: '<p>We monitor the RSS feeds of a curated set of outlets. Each outlet has a <strong>declared editorial line</strong> on a -2 to +2 scale. Every card links to the original article: the credit and the click always go to the outlet.</p>'
+  -
+    id: classification
+    title: 'How each article is classified'
+    body: '<p>An AI model reads each article and scores its <strong>framing</strong> (angle, voices, emphasis) from -2 to +2, based on that article''s text rather than the outlet''s reputation. A score measures framing, not whether the article is right. Outlet-level divergence is published on the <a href="[route:maemgaba_core.sources]">sources</a> page.</p>'
+  -
+    id: limitations
+    title: Limitations
+    modifier: limitations
+    body: '<p>Classification is automated and framing has genuine grey areas. Treat every score as a reasoned reading, not a verdict. Spotted a mistake? <a href="[route:maemgaba_core.suggest]">Suggest a correction</a>.</p>'
+  -
+    id: contributors
+    title: Contributors
+    body: ''
+    contributors:
+      intro: 'Readers whose corrections were applied:'
+      empty: 'No accepted corrections to credit yet; yours could be the first.'
+    body_after: '<p class="methodology-section__cta"><a href="[route:maemgaba_core.suggest]">Suggest a correction</a> and, if accepted, your name can appear in this list.</p>'
+revision: ''

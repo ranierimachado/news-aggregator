@@ -1,0 +1,118 @@
+maemgaba_core.nav_home:
+  title: 'Home'
+  title_context: maemgaba_nav
+  route_name: maemgaba_core.home
+  menu_name: main
+  weight: -10
+
+maemgaba_core.nav_sources:
+  title: 'Sources'
+  title_context: maemgaba_nav
+  route_name: maemgaba_core.sources
+  menu_name: main
+  weight: -9
+
+maemgaba_core.nav_events:
+  title: 'Events'
+  title_context: maemgaba_nav
+  route_name: view.events.page_1
+  menu_name: main
+  weight: -8
+
+maemgaba_core.nav_busca:
+  title: 'Search'
+  title_context: maemgaba_nav
+  route_name: maemgaba_core.busca
+  menu_name: main
+  weight: -7
+
+maemgaba_core.nav_ask:
+  title: 'Ask'
+  title_context: maemgaba_nav
+  route_name: maemgaba_core.ask
+  menu_name: main
+  weight: -5
+
+maemgaba_core.footer_nav_home:
+  title: 'Home'
+  title_context: maemgaba_nav
+  route_name: maemgaba_core.home
+  menu_name: footer
+  weight: -10
+
+maemgaba_core.footer_nav_sources:
+  title: 'Sources'
+  title_context: maemgaba_nav
+  route_name: maemgaba_core.sources
+  menu_name: footer
+  weight: -9
+
+maemgaba_core.footer_nav_events:
+  title: 'Events'
+  title_context: maemgaba_nav
+  route_name: view.events.page_1
+  menu_name: footer
+  weight: -8
+
+maemgaba_core.footer_legal_methodology:
+  title: 'Methodology'
+  title_context: maemgaba_nav
+  route_name: maemgaba_core.methodology
+  menu_name: footer-legal
+  weight: -8
+
+maemgaba_core.footer_legal_suggest:
+  title: 'Suggest a correction'
+  title_context: maemgaba_nav
+  route_name: maemgaba_core.suggest
+  menu_name: footer-legal
+  weight: -7
+
+maemgaba_core.ai_prompts:
+  title: 'News Engine: AI prompts'
+  description: 'Manage the AI prompt templates used for classification and clustering.'
+  route_name: entity.maemgaba_prompt.collection
+  parent: system.admin_config_services
+  weight: 4
+
+maemgaba_core.rubric:
+  title: 'News Engine: bias rubric'
+  description: 'Edit the versioned bias rubric (center definition, scale, framing signals, per-issue markers) that the classification prompts use.'
+  route_name: maemgaba_core.rubric
+  parent: system.admin_config_services
+  weight: 4
+
+maemgaba_core.pipeline:
+  title: 'News Engine: pipeline'
+  description: 'Run harvest, processing, backfill and event rollup.'
+  route_name: maemgaba_core.pipeline
+  parent: system.admin_config_services
+  weight: 5
+
+maemgaba_core.operation_models:
+  title: 'News Engine: AI models per operation'
+  description: 'Route each AI operation (classification, bias refinement, relevance, consensus, review) to a specific provider/model, or leave it on the site default.'
+  route_name: maemgaba_core.operation_models
+  parent: system.admin_config_services
+  weight: 6
+
+maemgaba_core.semantic_search_mariadb:
+  title: 'News Engine: semantic search (MariaDB)'
+  description: 'Run test queries against the MariaDB vector search index over events.'
+  route_name: maemgaba_core.semantic_search_mariadb
+  parent: system.admin_config_services
+  weight: 6
+
+maemgaba_core.ai_stats:
+  title: 'News Engine: AI stats'
+  description: 'View the AI call-log and eval-run dashboard (cost, latency, accuracy).'
+  route_name: maemgaba_core.ai_stats
+  parent: system.admin_config_services
+  weight: 7
+
+maemgaba_core.suggestions_menu:
+  title: 'News Engine: suggestions'
+  description: 'Moderate "suggest a correction" submissions and grant/renew evaluator search access.'
+  route_name: maemgaba_core.suggestions
+  parent: system.admin_config_services
+  weight: 8

@@ -1,0 +1,27 @@
+langcode: en
+status: true
+dependencies: {  }
+id: relevance
+label: 'Classify social relevance'
+description: 'Classifies social relevance, topic and a short reason from an article''s title and summary (backfills and re-tagging).'
+operation: relevance
+system_prompt: 'You are the social-relevance classifier of the [site_name] news aggregator. Always answer with valid JSON and no text outside the JSON.'
+template: |
+  Classify the social relevance of the following article from its title and summary.
+
+  TITLE: "[card_title]"
+  SUMMARY: "[card_summary]"
+
+  Answer strictly in JSON with these keys:
+  - "social_relevance": strictly "irrelevant", "maybe" or "relevant".
+  - "topic": strictly one of: [topic_list].
+  - "relevance_reason": one short sentence (max. 20 words) justifying the relevance, in [output_language].
+
+  SOCIAL RELEVANCE CRITERIA
+  Focus: political and social events that affect a large share of society.
+  - "relevant": politics and government, elections, economy that affects citizens, courts, public safety, human rights, international affairs with national impact, labor. Mark as relevant EVEN IF only one outlet reported it.
+  - "maybe": a real event with narrow or uncertain social reach (regional incident, light news that only matters if many outlets cover it).
+  - "irrelevant": entertainment, celebrities, sports results and gossip, lifestyle, listicles ("X things that..."), shopping tips, betting, viral curiosities, health tips.
+rubric_version: ''
+blind: false
+anchors: {  }

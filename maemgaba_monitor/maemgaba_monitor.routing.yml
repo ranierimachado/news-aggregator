@@ -1,0 +1,17 @@
+# web/modules/custom/maemgaba_monitor/maemgaba_monitor.routing.yml
+maemgaba_monitor.costs:
+  path: '/admin/config/services/news-engine/costs'
+  defaults:
+    _controller: '\Drupal\maemgaba_monitor\Controller\CostDashboardController::page'
+    _title: 'News Engine: AI costs'
+  requirements:
+    _permission: 'view news engine cost monitor'
+
+maemgaba_monitor.costs_day:
+  path: '/admin/config/services/news-engine/costs/{day}'
+  defaults:
+    _controller: '\Drupal\maemgaba_monitor\Controller\CostDashboardController::dayPage'
+    _title: 'AI costs: day detail'
+  requirements:
+    _permission: 'view news engine cost monitor'
+    day: \d{4}-\d{2}-\d{2}

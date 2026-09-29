@@ -1,0 +1,14 @@
+langcode: pt-br
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_feed_url
+    - node.type.feed_source
+id: node.feed_source.field_feed_url
+field_name: field_feed_url
+entity_type: node
+bundle: feed_source
+label: Feed URL
+required: true
+field_type: string
+settings: {}

@@ -1,0 +1,120 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch: {}
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    name: gitleaks (full history)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # The action lists the PR's commits on pull_request runs.
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+
+  test:
+    name: phpcs + kernel tests (PHP 8.3, MariaDB 11.8)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      mariadb:
+        image: mariadb:11.8
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: drupal
+          MARIADB_USER: drupal
+          MARIADB_PASSWORD: drupal
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      COMPOSER_NO_INTERACTION: '1'
+      SIMPLETEST_DB: mysql://drupal:drupal@127.0.0.1:3306/drupal
+      SIMPLETEST_BASE_URL: http://localhost
+
+    steps:
+      - name: Checkout the engine
+        uses: actions/checkout@v4
+        with:
+          path: engine
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: gd, pdo_mysql, mbstring, xml, zip, apcu, opcache
+          tools: composer:v2
+          coverage: none
+
+      - name: Cache Composer downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/composer
+          key: composer-${{ runner.os }}-php8.3-${{ hashFiles('engine/composer.json') }}
+          restore-keys: composer-${{ runner.os }}-php8.3-
+
+      # The modules' .info.yml version, the latest CHANGELOG entry and (on a
+      # tag build) the tag must all agree, so Drupal's module list shows the
+      # release a site actually runs.
+      - name: Version consistency
+        working-directory: engine
+        run: scripts/check-version.sh ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || '' }}
+
+      - name: Validate composer.json
+        working-directory: engine
+        run: composer validate --strict --no-check-lock
+
+      # A throwaway drupal/recommended-project that consumes this checkout as a
+      # path repository, the same way a consuming site does locally.
+      - name: Build a throwaway Drupal project
+        run: |
+          composer create-project drupal/recommended-project:^11.4 build --no-install --no-progress
+          cd build
+          composer config repositories.engine '{"type": "path", "url": "../engine", "options": {"symlink": false}}'
+          composer require "ranierimachado/news-aggregator:*@dev" --with-all-dependencies --no-progress
+          composer require --dev "drupal/core-dev:^11.4" --with-all-dependencies --no-progress
+          # twig/twig 3.30.0 (2026-09) breaks Drupal 11.4.7 template rendering:
+          # EscaperRuntime::escape() gets a null $autoescape and throws
+          # (EngineThemeTest, reproduced on unchanged main, run 36200524269).
+          # Both sites lock older Twig (3.28/3.29). Drop this cap once core
+          # supports 3.30.
+          composer require "twig/twig:<3.30" --with-all-dependencies --no-progress
+          echo "--- installed at:"
+          ls web/modules/custom/news-aggregator
+          composer show ranierimachado/news-aggregator | head -5
+
+      - name: phpcs (Drupal standard)
+        working-directory: engine
+        run: ../build/vendor/bin/phpcs --report=full --report-width=120
+
+      - name: Kernel and unit tests
+        working-directory: build
+        run: |
+          mkdir -p web/sites/simpletest/browser_output
+          vendor/bin/phpunit -c web/core --display-deprecations --fail-on-warning web/modules/custom/news-aggregator

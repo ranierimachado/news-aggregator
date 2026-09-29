@@ -1,0 +1,618 @@
+# Portuguese (Brazil) translation of maemgaba_core.
+# English source strings are the engine's; this file carries the
+# Brazilian Portuguese interface text of the first site that ran it.
+msgid ""
+msgstr ""
+"Project-Id-Version: maemgaba_core\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: pt-br\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "1 event found"
+msgid_plural "@count events found"
+msgstr[0] "1 evento encontrado"
+msgstr[1] "@count eventos encontrados"
+
+msgid "1. Harvest feeds"
+msgstr "1. Capturar feeds (harvest)"
+
+msgid "2. Process queue (AI)"
+msgstr "2. Processar fila (IA)"
+
+msgid "A query finds events about the same subject even when the title uses different words."
+msgstr "\"Imposto sobre compras da China\" encontra eventos sobre taxação de importados, mesmo sem essas palavras no título."
+
+msgid "AI calls per operation (@n days)"
+msgstr "Chamadas de IA por operação (@n dias)"
+
+msgid "About the event: %title"
+msgstr "Sobre o evento: %title"
+
+msgid "Accept"
+msgstr "Aceitar"
+
+msgid "Accept this correction?"
+msgstr "Aceitar esta correção?"
+
+msgid "Accuracy per field"
+msgstr "Acurácia por campo"
+
+msgid "As a thank-you, your semantic search access (@url) was extended by 10 days."
+msgstr "Como agradecimento, seu acesso à busca semântica (@url) foi renovado por mais 10 dias."
+
+msgid "Backfill finished: @c classified, @f failed."
+msgstr "Backfill concluído: @c classificado(s), @f falha(s)."
+
+msgid "Become an evaluator"
+msgstr "Torne-se avaliador"
+
+msgid "By meaning"
+msgstr "Por significado"
+
+msgid "Cards awaiting review (second layer)"
+msgstr "Cards pendentes de revisão (2ª camada)"
+
+msgid "Cards without relevance"
+msgstr "Cards sem relevância"
+
+msgid "Cards — relevant / maybe / irrelevant"
+msgstr "Cards — relevante / talvez / irrelevante"
+
+msgid "Classifying card relevance…"
+msgstr "Classificando relevância dos cards…"
+
+msgid "Classifying… @n left"
+msgstr "Classificando… @n restante(s)"
+
+msgid "Contact"
+msgstr "Contato"
+
+msgid "Correction accepted."
+msgstr "Correção aceita."
+
+msgid "Correction rejected."
+msgstr "Correção rejeitada."
+
+msgid "Correction suggestions"
+msgstr "Sugestões (Sugerir correção)"
+
+msgid "Could not send."
+msgstr "Não foi possível enviar."
+
+msgid "Coverage from many outlets, classified by bias."
+msgstr "Cobertura de vários veículos, classificada por viés."
+
+msgid "Credit / email"
+msgstr "Crédito / e-mail"
+
+msgid "Date"
+msgstr "Data"
+
+msgid "Decide suggestion"
+msgstr "Decidir sugestão"
+
+msgid "Delete event and its cards"
+msgstr "Excluir evento e suas matérias (cards)"
+
+msgid "Describe the subject in your own words. We find events by meaning, not just by keyword."
+msgstr "Descreva o assunto com suas palavras. Encontramos eventos por significado — não apenas por palavra-chave."
+
+msgid "Description"
+msgstr "Descrição"
+
+msgid "E.g. @example"
+msgstr "Ex: @example"
+
+msgid "Each result is an event with its coverage grouped by bias, side by side."
+msgstr "Cada resultado é um evento com a cobertura agrupada por viés — esquerda, centro e direita, lado a lado."
+
+msgid "Email"
+msgstr "E-mail"
+
+msgid "Errors"
+msgstr "Erros"
+
+msgid "Estimated cost"
+msgstr "Custo estimado"
+
+msgid "Evaluation runs"
+msgstr "Rodadas de avaliação (eval runs)"
+
+msgid "Event"
+msgstr "Evento"
+
+msgid "Events — relevant / maybe / irrelevant"
+msgstr "Eventos — relevante / talvez / irrelevante"
+
+msgid "Every perspective"
+msgstr "Três perspectivas"
+
+msgid "Factual error"
+msgstr "Erro factual"
+
+msgid "Friday"
+msgstr "sexta-feira"
+
+msgid "From: @name <@email>"
+msgstr "De: @name <@email>"
+
+msgid "HTTP attempts"
+msgstr "Tentativas HTTP"
+
+msgid "Harvest finished: @n new queue item(s)."
+msgstr "Captura concluída: @n nova(s) entrada(s) na fila."
+
+msgid "Harvesting @name… (@n new)"
+msgstr "Capturando @name… (@n nova(s))"
+
+msgid "Harvesting feeds…"
+msgstr "Capturando feeds…"
+
+msgid "How you want to be credited (optional)"
+msgstr "Como quer ser creditado (opcional)"
+
+msgid "Items"
+msgstr "Itens"
+
+msgid "Items in the queue (inbound_queue)"
+msgstr "Itens na fila (inbound_queue)"
+
+msgid "Link to evidence (optional)"
+msgstr "Link com evidência (opcional)"
+
+msgid "Logical calls"
+msgstr "Chamadas lógicas"
+
+msgctxt "Long month name"
+msgid "April"
+msgstr "abril"
+
+msgctxt "Long month name"
+msgid "August"
+msgstr "agosto"
+
+msgctxt "Long month name"
+msgid "December"
+msgstr "dezembro"
+
+msgctxt "Long month name"
+msgid "February"
+msgstr "fevereiro"
+
+msgctxt "Long month name"
+msgid "January"
+msgstr "janeiro"
+
+msgctxt "Long month name"
+msgid "July"
+msgstr "julho"
+
+msgctxt "Long month name"
+msgid "June"
+msgstr "junho"
+
+msgctxt "Long month name"
+msgid "March"
+msgstr "março"
+
+msgctxt "Long month name"
+msgid "May"
+msgstr "maio"
+
+msgctxt "Long month name"
+msgid "November"
+msgstr "novembro"
+
+msgctxt "Long month name"
+msgid "October"
+msgstr "outubro"
+
+msgctxt "Long month name"
+msgid "September"
+msgstr "setembro"
+
+msgid "Mean latency (ms)"
+msgstr "Latência média (ms)"
+
+msgid "Message"
+msgstr "Mensagem"
+
+msgid "Message sent. Thanks for getting in touch!"
+msgstr "Mensagem enviada. Obrigado pelo contato!"
+
+msgid "Methodology"
+msgstr "Metodologia"
+
+msgid "Metric"
+msgstr "Métrica"
+
+msgid "Moderation note (optional)"
+msgstr "Nota de moderação (opcional)"
+
+msgid "Monday"
+msgstr "segunda-feira"
+
+msgid "Name"
+msgstr "Nome"
+
+msgid "New contact message — @site"
+msgstr "Nova mensagem de contato — @site"
+
+msgid "No AI calls recorded in this period."
+msgstr "Nenhuma chamada de IA registrada neste período."
+
+msgid "No evaluation runs recorded yet. Run <code>drush maemgaba:eval relevance</code>."
+msgstr "Nenhuma rodada de avaliação registrada ainda. Rode <code>drush maemgaba:eval relevance</code>."
+
+msgid "No events found for this search."
+msgstr "Nenhum evento encontrado para esta busca."
+
+msgid "No suggestions for this filter."
+msgstr "Nenhuma sugestão neste filtro."
+
+msgid "Note from the team: @note"
+msgstr "Nota da equipe: @note"
+
+msgid "Only used to let you know if the correction is applied."
+msgstr "Só usamos para avisar se a correção for aplicada."
+
+msgid "Operation"
+msgstr "Operação"
+
+msgid "Operations"
+msgstr "Ações"
+
+msgid "Other"
+msgstr "Outro"
+
+msgid "Pipeline status"
+msgstr "Estado do pipeline"
+
+msgid "Processing finished: @p card(s), @e new event(s)."
+msgstr "Processamento concluído: @p card(s), @e evento(s) novo(s)."
+
+msgid "Processing queue… @n left"
+msgstr "Processando fila… @n restante(s)"
+
+msgid "Processing the inbound queue…"
+msgstr "Processando a fila de entrada…"
+
+msgid "Recalculate events"
+msgstr "Recalcular eventos"
+
+msgid "Reject"
+msgstr "Rejeitar"
+
+msgid "Reject this correction?"
+msgstr "Rejeitar esta correção?"
+
+msgid "Relevance"
+msgstr "Relevância"
+
+msgid "Relevance backfill"
+msgstr "Backfill de relevância"
+
+msgid "Results are ordered by how close their meaning is to your query, closest first."
+msgstr "Os resultados vêm ordenados pela proximidade de significado com a sua pergunta, da maior para a menor."
+
+msgid "Review cards (second layer)"
+msgstr "Revisar cards (2ª camada)"
+
+msgid "Review finished: @r reviewed, @c corrected, @f failed."
+msgstr "Revisão concluída: @r revisado(s), @c corrigido(s), @f falha(s)."
+
+msgid "Reviewing processed cards…"
+msgstr "Revisando cards já processados…"
+
+msgid "Reviewing… @n left"
+msgstr "Revisando… @n restante(s)"
+
+msgid "Rollup finished for @n event(s)."
+msgstr "Rollup concluído em @n evento(s)."
+
+msgid "Runs the pipeline steps by hand. Long steps show a progress bar."
+msgstr "Executa as etapas do pipeline manualmente. As etapas longas mostram uma barra de progresso."
+
+msgid "Saturday"
+msgstr "sábado"
+
+msgid "Search access until"
+msgstr "Acesso à busca até"
+
+msgid "Search is temporarily unavailable."
+msgstr "Busca temporariamente indisponível."
+
+msgid "Search →"
+msgstr "Buscar →"
+
+msgid "Semantic search"
+msgstr "Busca semântica"
+
+msgid "Send"
+msgstr "Enviar"
+
+msgid "Sent"
+msgstr "Enviado em"
+
+msgid "Sent too fast. Please try again."
+msgstr "Envio muito rápido. Tente novamente."
+
+msgid "Sign up"
+msgstr "Cadastrar"
+
+msgid "Sign up as an evaluator and get 10 days of access to @site semantic search. Correcting more events renews your access."
+msgstr "Cadastre-se como avaliador e ganhe 10 dias de acesso à busca semântica do @site. Corrigir mais eventos renova seu acesso."
+
+msgid "Sign-up limit reached. Please try again later."
+msgstr "Limite de cadastros atingido. Tente novamente mais tarde."
+
+msgid "Something went wrong with the search. Please try again."
+msgstr "Ocorreu um erro ao buscar. Tente novamente."
+
+msgid "Source problem"
+msgstr "Problema de fonte"
+
+msgid "Sources"
+msgstr "Fontes"
+
+msgid "Submission limit reached. Please try again later."
+msgstr "Limite de envios atingido. Tente novamente mais tarde."
+
+msgid "Suggest a correction"
+msgstr "Sugerir correção"
+
+msgid "Suggested correction"
+msgstr "Correção sugerida"
+
+msgid "Sunday"
+msgstr "domingo"
+
+msgid "Thank you"
+msgstr "Obrigado"
+
+msgid "Thank you! The correction you sent (@type) was reviewed and applied."
+msgstr "Obrigado! A correção que você enviou (@type) foi analisada e aplicada."
+
+msgid "The author will not be notified."
+msgstr "O autor não será notificado."
+
+msgid "The author's semantic search access will be extended by 10 days and, if there is an email, a notification will be sent."
+msgstr "O acesso à busca semântica do autor será renovado por mais 10 dias e, se houver e-mail, uma notificação será enviada."
+
+msgid "The harvest failed."
+msgstr "A captura falhou."
+
+msgid "The last @n days of AI calls, and every evaluation run recorded so far. \"Logical calls\" counts business invocations (e.g. one classified card); \"HTTP attempts\" counts every real request sent to the provider, retries included; the two only differ after transient failures."
+msgstr "Últimos @n dias de chamadas de IA, e todas as rodadas de avaliação (eval) já registradas. \"Chamadas lógicas\" conta invocações de negócio (ex.: um card classificado); \"Tentativas HTTP\" conta cada requisição real enviada ao provedor, incluindo retries — os dois só divergem quando houve falha transitória."
+
+msgid "This suggestion had already been decided."
+msgstr "Esta sugestão já havia sido decidida."
+
+msgid "This suggestion was already decided or does not exist."
+msgstr "Esta sugestão já foi decidida ou não existe."
+
+msgid "Thursday"
+msgstr "quinta-feira"
+
+msgid "Tokens in / out"
+msgstr "Tokens entrada / saída"
+
+msgid "Tracked events"
+msgstr "Eventos em acompanhamento"
+
+msgid "Try"
+msgstr "Tente"
+
+msgid "Tuesday"
+msgstr "terça-feira"
+
+msgid "Type"
+msgstr "Tipo"
+
+msgid "Type of correction"
+msgstr "Tipo de correção"
+
+msgid "Untitled article"
+msgstr "Matéria sem Título"
+
+msgid "Username"
+msgstr "Nome de usuário"
+
+msgid "Value"
+msgstr "Valor"
+
+msgid "View AI stats (cost, latency, accuracy) →"
+msgstr "Ver estatísticas de IA (custo, latência, acurácia) →"
+
+msgid "We will send a one-time login link to this address."
+msgstr "Enviaremos um link de acesso único para este endereço."
+
+msgid "Wednesday"
+msgstr "quarta-feira"
+
+msgid "What is wrong?"
+msgstr "O que está errado?"
+
+msgid "Wrong classification"
+msgstr "Classificação errada"
+
+msgid "Wrong grouping"
+msgstr "Agrupamento errado"
+
+msgid "You already have an account."
+msgstr "Você já tem uma conta."
+
+msgid "You are already an evaluator."
+msgstr "Você já é avaliador."
+
+msgid "You are signed up! We sent you an email with a login link; use it to set your password. Your semantic search access is active for 10 days."
+msgstr "Cadastro realizado! Enviamos um e-mail com um link de acesso — use-o para definir sua senha. Seu acesso à busca semântica já está liberado por 10 dias."
+
+msgid "Your correction was applied — @site"
+msgstr "Sua correção foi aplicada — @site"
+
+msgid "Your email"
+msgstr "Seu e-mail"
+
+msgid "Your email (optional)"
+msgstr "Seu e-mail (opcional)"
+
+msgctxt "maemgaba_nav"
+msgid "Events"
+msgstr "Eventos"
+
+msgctxt "maemgaba_nav"
+msgid "Home"
+msgstr "Início"
+
+msgctxt "maemgaba_nav"
+msgid "Methodology"
+msgstr "Metodologia"
+
+msgctxt "maemgaba_nav"
+msgid "Search"
+msgstr "Busca"
+
+msgctxt "maemgaba_nav"
+msgid "Sources"
+msgstr "Fontes"
+
+msgctxt "maemgaba_nav"
+msgid "Suggest a correction"
+msgstr "Sugerir correção"
+
+msgctxt "maemgaba_time"
+msgid "1 day"
+msgid_plural "@count days"
+msgstr[0] "1 dia"
+msgstr[1] "@count dias"
+
+msgctxt "maemgaba_time"
+msgid "1 hour"
+msgid_plural "@count hours"
+msgstr[0] "1 hora"
+msgstr[1] "@count horas"
+
+msgctxt "maemgaba_time"
+msgid "1 min"
+msgid_plural "@count min"
+msgstr[0] "1 min"
+msgstr[1] "@count min"
+
+msgctxt "maemgaba_time"
+msgid "1 month"
+msgid_plural "@count months"
+msgstr[0] "1 mês"
+msgstr[1] "@count meses"
+
+msgctxt "maemgaba_time"
+msgid "1 wk"
+msgid_plural "@count wk"
+msgstr[0] "1 sem"
+msgstr[1] "@count sem"
+
+msgctxt "maemgaba_time"
+msgid "@count d ago"
+msgstr "há @count d"
+
+msgctxt "maemgaba_time"
+msgid "@count h ago"
+msgstr "há @count h"
+
+msgctxt "maemgaba_time"
+msgid "@count min ago"
+msgstr "há @count min"
+
+msgid "~US$ @c (@n estimated)"
+msgstr "~US$ @c (@n estimado)"
+
+# Engine templates and behaviours (moved from maemgaba_theme in P4).
+
+msgid "Articles"
+msgstr "Artigos"
+
+msgid "Articles<br>published"
+msgstr "Artigos<br>publicados"
+
+msgid "Balance"
+msgstr "Equilíbrio"
+
+msgid "Common ground"
+msgstr "Pontos em comum"
+
+msgid "Disputed"
+msgstr "Em disputa"
+
+msgid "Divergence"
+msgstr "Divergência"
+
+msgid "Editorial line"
+msgstr "Linha editorial"
+
+msgid "Featured"
+msgstr "Destaque"
+
+msgid "Get 10 days of access to @site semantic search. Accepted corrections renew your access."
+msgstr "Ganhe 10 dias de acesso à busca semântica do @site. Correções aceitas renovam seu acesso."
+
+msgid "High divergence is not an error: it marks an outlet whose coverage of specific events departs from its historical editorial line, a useful signal for readers and editors."
+msgstr "Uma divergência alta não significa erro: indica um veículo cuja cobertura de eventos específicos varia em relação à sua linha editorial histórica — um sinal útil para leitores e editores."
+
+msgid "Latest"
+msgstr "Último"
+
+msgid "Loading more events…"
+msgstr "Carregando mais eventos…"
+
+msgid "Monitored outlets and their editorial divergence."
+msgstr "Veículos monitorados e sua divergência editorial."
+
+msgid "No monitored outlets yet."
+msgstr "Nenhuma fonte monitorada até o momento."
+
+msgid "No perspective identified with this bias."
+msgstr "Nenhuma perspectiva identificada com este viés."
+
+msgid "Outlet"
+msgstr "Veículo"
+
+msgid "Perspectives"
+msgstr "Perspectivas"
+
+msgid "Read the original ↗"
+msgstr "Ler no original ↗"
+
+msgid "See perspectives →"
+msgstr "Ver perspectivas →"
+
+msgid "Sign up as an evaluator"
+msgstr "Cadastre-se como avaliador"
+
+msgid "Sign up as an evaluator →"
+msgstr "Cadastrar como avaliador →"
+
+msgid "Spectrum"
+msgstr "Espectro"
+
+msgid "Spotted something wrong? Suggest a correction →"
+msgstr "Viu algo errado? Sugerir correção →"
+
+msgid "Synthesizing common ground and disputed points…"
+msgstr "Sintetizando pontos em comum e em disputa…"
+
+msgid "Thank you!"
+msgstr "Obrigado!"
+
+msgid "There is not enough coverage yet to synthesize consensus."
+msgstr "Ainda não há cobertura suficiente para gerar consenso."
+
+msgid "Tracked event"
+msgstr "Evento em acompanhamento"
+
+msgid "Want to help more?"
+msgstr "Quer ajudar mais?"
+
+msgid "Your correction was sent and will be reviewed by our team. Every correction helps improve @site."
+msgstr "Sua correção foi enviada e será analisada pela nossa equipe. Cada correção ajuda a melhorar o @site."

@@ -1,0 +1,7 @@
+langcode: en
+status: true
+dependencies: {  }
+id: maemgaba_day
+label: 'News engine: date'
+locked: false
+pattern: 'F j, Y'

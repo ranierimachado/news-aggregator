@@ -1,0 +1,32 @@
+langcode: en
+status: true
+dependencies: {  }
+id: synthesize_consensus
+label: 'Synthesize common and disputed points'
+description: 'From every outlet''s perspective on one event, synthesizes the points they agree on and the points they frame differently.'
+operation: synthesize_consensus
+system_prompt: 'You are the synthesis editor of the [site_name] news aggregator. From several outlets'' coverage of the same fact, you separate what is agreed from what is contested. Always answer with valid JSON and no text outside the JSON.'
+template: |-
+  Below is the coverage of one factual event by several news outlets, with each outlet's editorial leaning. Synthesize where they agree and where they diverge.
+
+  EVENT: "[event_title]"
+
+  NEUTRAL SUMMARY OF THE EVENT:
+  [neutral_summary]
+
+  OUTLET PERSPECTIVES (leaning · outlet · summary):
+  [perspectives]
+
+  Answer strictly in JSON with these keys:
+  - "common_points": a list (array) of 2 to 4 short sentences with the COMMON GROUND: facts or claims that practically every outlet reports consistently, regardless of leaning. Describe undisputed facts, not opinions.
+  - "disputed_points": a list (array) of 2 to 4 short sentences with the DISPUTED points: where the outlets diverge in framing, interpretation, emphasis or value judgment. Describe the nature of the disagreement; do not take sides.
+
+  GUIDELINES
+  - Each item is a single, factual, concise sentence (max. ~18 words), without bullets or numbering.
+  - "common_points": what is factually agreed across outlets.
+  - "disputed_points": where editorial readings split (e.g. legitimacy of a decision, who is responsible, overreach versus legality).
+  - Do not invent information that is not in the perspectives. If there is little to go on for either field, return fewer items rather than speculate.
+  - Write in [output_language], in a neutral, journalistic tone.
+rubric_version: ''
+blind: false
+anchors: {  }

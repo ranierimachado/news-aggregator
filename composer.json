@@ -1,0 +1,35 @@
+{
+    "name": "ranierimachado/news-aggregator",
+    "description": "A multi-perspective news pipeline for Drupal 11. RSS ingestion, article-level AI bias and topic classification against a versioned rubric, story clustering into neutral events, consensus synthesis, semantic search and cost monitoring. Everything site-specific is config.",
+    "type": "drupal-custom-module",
+    "license": "GPL-2.0-or-later",
+    "homepage": "https://github.com/ranierimachado/news-aggregator",
+    "support": {
+        "issues": "https://github.com/ranierimachado/news-aggregator/issues",
+        "source": "https://github.com/ranierimachado/news-aggregator"
+    },
+    "require": {
+        "php": ">=8.3",
+        "drupal/ai": "^1.4.4",
+        "drupal/ai_provider_anthropic": "^1.2",
+        "drupal/ai_vdb_provider_mariadb": "^1.0",
+        "drupal/core": "^11.4",
+        "drupal/key": "^1.22",
+        "drupal/mcp": "^1.2",
+        "drupal/search_api": "^1.38",
+        "drush/drush": "^13.7",
+        "fivefilters/readability.php": "^3.3"
+    },
+    "require-dev": {
+        "drupal/core-dev": "^11.4"
+    },
+    "suggest": {
+        "drupal/gemini_provider": "Google Gemini provider for drupal/ai. Optional; not usable from DigitalOcean IPs with AI Studio keys.",
+        "drupal/ai_provider_ollama": "Run classify/relevance operations on a local Ollama model via ai.settings operation_models.",
+        "drupal/ai_vdb_provider_milvus": "Milvus/Zilliz vector backend used only as a local comparison stack; MariaDB native vector is the wired default.",
+        "drupal/search_api_solr_dense_vector": "Solr 9.6+ dense-vector fields for the hybrid /explore engine (with drupal/search_api_solr and drupal/facets). Optional; the Solr code is inert without it."
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

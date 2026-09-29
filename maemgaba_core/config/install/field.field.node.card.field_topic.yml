@@ -1,0 +1,20 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_topic
+    - node.type.card
+  module:
+    - options
+id: node.card.field_topic
+field_name: field_topic
+entity_type: node
+bundle: card
+label: Topic
+description: 'Main topic of the article, assigned by the AI classifier.'
+required: false
+translatable: false
+default_value: {}
+default_value_callback: ''
+settings: {}
+field_type: list_string

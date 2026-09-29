@@ -1,0 +1,18 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_common_points
+    - node.type.event
+id: node.event.field_common_points
+field_name: field_common_points
+entity_type: node
+bundle: event
+label: Common ground
+description: 'Consensus points shared across the sources covering this event. One point per value.'
+required: false
+translatable: false
+default_value: {}
+default_value_callback: ''
+settings: {}
+field_type: string_long

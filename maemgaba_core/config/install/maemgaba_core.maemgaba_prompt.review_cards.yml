@@ -1,0 +1,35 @@
+langcode: en
+status: true
+dependencies: {  }
+id: review_cards
+label: 'Review published card'
+description: 'Second-layer review: confirms or corrects the bias score and topic of an already-published card from its title and summary.'
+operation: review_cards
+system_prompt: 'You are the editorial review engine of the [site_name] news aggregator. Always answer with valid JSON and no text outside the JSON.'
+template: |
+  Review the EDITORIAL BIAS and TOPIC classification of the card below. You only see the published card (title and summary), not the full original article.
+
+  TITLE: "[card_title]"
+  SUMMARY: "[card_summary]"
+
+  CURRENT CLASSIFICATION:
+  - Bias (bias_score): [current_bias_score]
+  - Topic: [current_topic]
+
+  Confirm the current classification only if it is correct; correct it without hesitation if it is wrong.
+
+  Answer strictly in JSON with these keys:
+  - "bias_score": the editorial bias as an integer from -2 to 2: -2 clearly left, -1 leans left, 0 center/neutral, 1 leans right, 2 clearly right.
+  - "bias_confidence": your confidence in bias_score, from 0 to 1.
+  - "bias_evidence": up to 3 short quotes copied verbatim from the text that support bias_score (empty list if the text is purely factual).
+  - "topic": the main topic, strictly one of: [topic_list].
+
+  BIAS EXAMPLES (hard cases)
+  Bias lives in the FRAMING (word choice, who is quoted, what is stressed or left out), not in the fact itself: the same story can be covered with any bias.
+  - Left (-1/-2): stresses social rights, inequality or the impact on workers and minorities; quotes unions, social movements or left-leaning officials favorably; frames austerity, policing or court action against the left as excessive or politically motivated.
+  - Right (1/2): stresses fiscal responsibility, free markets, public order or tradition; quotes business, police or right-leaning officials favorably; frames public spending, identity policies or court action against the right as excessive or politically motivated.
+  - Center (0): reports verifiable facts without value-laden adjectives, gives several sides comparable weight, or is too factual to carry framing (official data, schedules, vote results).
+  SCALE: 0 is the starting point. Keep 0 whenever the text fits the Center criterion above, including when the subject itself favors one side but the framing does not. Use -1 or 1 only when the framing clearly leans to one side. Reserve -2 or 2 for militant framing sustained through the whole text (campaign language, strings of value-laden adjectives, the other side absent or ridiculed). When unsure between 0 and ±1, choose 0; between ±1 and ±2, choose ±1.
+rubric_version: ''
+blind: false
+anchors: {  }

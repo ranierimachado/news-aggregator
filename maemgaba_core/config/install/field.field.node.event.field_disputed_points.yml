@@ -1,0 +1,18 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_disputed_points
+    - node.type.event
+id: node.event.field_disputed_points
+field_name: field_disputed_points
+entity_type: node
+bundle: event
+label: Disputed
+description: 'Points that are contested or framed differently across the sources covering this event. One point per value.'
+required: false
+translatable: false
+default_value: {}
+default_value_callback: ''
+settings: {}
+field_type: string_long

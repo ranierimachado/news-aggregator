@@ -1,0 +1,63 @@
+{#
+/**
+ * @file
+ * Table of monitored outlets with editorial line, spectrum and divergence.
+ *
+ * Available variables:
+ * - sources: list of outlets, each with name, initials, last_ago, primary
+ *   (bucket key), primary_color, bias_label, total, dist (count per bucket
+ *   key), spectrum_bar (render array), divergence (int %), level,
+ *   level_class.
+ * - buckets: spectrum buckets in display order (key, short_label, ...).
+ */
+#}
+{% if sources is empty %}
+  <p class="no-perspective">{{ 'No monitored outlets yet.'|t }}</p>
+{% else %}
+  <table class="sources-table">
+    <thead>
+      <tr>
+        <th>{{ 'Outlet'|t }}</th>
+        <th>{{ 'Editorial line'|t }}</th>
+        <th class="num">{{ 'Articles'|t }}</th>
+        <th>{{ 'Spectrum'|t }}</th>
+        <th class="num">{{ 'Divergence'|t }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in sources %}
+        <tr>
+          <td>
+            <div class="source-cell">
+              <span class="source-avatar">{{ s.initials }}</span>
+              <div>
+                <div class="source-cell__name">{{ s.name }}</div>
+                <div class="source-cell__last">{{ 'Latest'|t }} · {{ s.last_ago }}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="source-bias source-bias--{{ s.primary }}" style="--bucket-color: var(--bucket-{{ s.primary }}-color, {{ s.primary_color }})"><span class="dot"></span>{{ s.bias_label }}</span>
+          </td>
+          <td class="num"><span class="source-count">{{ s.total }}</span></td>
+          <td>
+            <div class="source-spectrum">
+              {{ s.spectrum_bar }}
+              <div class="source-spectrum__legend">
+                {% for bucket in buckets %}
+                  <span>{{ s.dist[bucket.key] }} {{ bucket.short_label|upper }}</span>
+                {% endfor %}
+              </div>
+            </div>
+          </td>
+          <td class="num">
+            <div class="source-divergence divergence--{{ s.level_class }}">
+              <div class="source-divergence__pct">{{ s.divergence }}%</div>
+              <div class="source-divergence__level">{{ s.level }}</div>
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endif %}

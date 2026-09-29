@@ -1,0 +1,10 @@
+langcode: en
+status: true
+dependencies: {}
+type: inbound_queue
+name: 'Inbound Queue'
+description: 'Staging ledger to hold raw harvested news content before AI processing.'
+help: ''
+new_revision: false
+preview_mode: 1
+display_submitted: false

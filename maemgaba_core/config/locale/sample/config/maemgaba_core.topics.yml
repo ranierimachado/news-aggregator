@@ -1,0 +1,37 @@
+# Topic keys are stored on cards: never rename or remove one that content
+# already carries, relabel it instead.
+topics:
+  -
+    key: politics
+    label: Politics
+  -
+    key: economy
+    label: Economy
+  -
+    key: justice
+    label: 'Courts and justice'
+  -
+    key: security
+    label: 'Public safety'
+  -
+    key: international
+    label: International
+  -
+    key: society
+    label: 'Society and rights'
+  -
+    key: environment
+    label: 'Environment and energy'
+  -
+    key: health
+    label: Health
+  -
+    key: science
+    label: 'Science and technology'
+  -
+    key: sports
+    label: Sports
+  -
+    key: general
+    label: 'General / other'
+fallback: general

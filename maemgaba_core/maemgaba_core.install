@@ -1,0 +1,728 @@
+<?php
+
+/**
+ * @file
+ * Install/schema hooks for News Engine core.
+ */
+
+declare(strict_types=1);
+
+/**
+ * Implements hook_install().
+ *
+ * Post-update hooks don't run on a fresh install, so provision the account
+ * that owns pipeline-created nodes here too (see PipelineIdentity).
+ */
+function maemgaba_core_install(bool $is_syncing): void {
+  if ($is_syncing) {
+    return;
+  }
+  \Drupal::service('maemgaba_core.pipeline_identity')->provision();
+}
+
+/**
+ * Implements hook_schema().
+ *
+ * Two custom tables for the AI evals/observability layer (Phase 1): a
+ * per-call log (high write volume, raw-SQL reporting — same rationale as
+ * EventRankingService's raw SQL) and persisted eval-run results so accuracy
+ * is comparable across prompt versions over time.
+ */
+function maemgaba_core_schema(): array {
+  $schema['maemgaba_ai_call_log'] = [
+    'description' => 'Per-call log of every AiAnalyzerService provider invocation: timing, token usage, outcome.',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Primary key.',
+      ],
+      'operation' => [
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'description' => 'maemgaba_prompt operation key (classify_cluster, relevance, synthesize_consensus).',
+      ],
+      'provider' => [
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'AI provider plugin id, e.g. gemini.',
+      ],
+      'model' => [
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Model id used for the call.',
+      ],
+      'prompt_config_id' => [
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => FALSE,
+        'description' => 'maemgaba_prompt config entity id used, if any.',
+      ],
+      'call_group' => [
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Correlates every attempt (including internal retries) belonging to one logical AiAnalyzerService call.',
+      ],
+      'context_type' => [
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'What business object this call was made for: inbound_queue (pipeline processing), card (relevance backfill), event (consensus synthesis), eval (golden-set replay). Empty = unattributed (rows logged before this column existed, or callers that pass no context).',
+      ],
+      'context_id' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+        'description' => 'Entity id of the context object (queue item / card / event nid), if any.',
+      ],
+      'context_label' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Human-readable label of the context object (article/event title). Stored denormalized because inbound_queue nodes are deleted once processed, so a join could never recover the title.',
+      ],
+      'attempt' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 1,
+        'description' => 'Attempt number (1-based) within call_group; 0 means the call never reached the provider (e.g. no prompt/provider configured). attempt > 1 means this row is a retry.',
+      ],
+      'input_tokens' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+        'description' => 'Prompt/input token count from the provider (or estimated).',
+      ],
+      'output_tokens' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+        'description' => 'Completion/output token count from the provider (or estimated).',
+      ],
+      'reasoning_tokens' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+        'description' => 'Thinking/reasoning token count from the provider (Gemini thoughtsTokenCount), if reported. Billed as output tokens.',
+      ],
+      'cached_tokens' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+        'description' => 'Cached-context token count from the provider (Gemini cachedContentTokenCount), if reported.',
+      ],
+      'estimated' => [
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Boolean: 1 if token counts are a strlen/4 estimate (provider did not report usage).',
+      ],
+      'latency_ms' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Wall-clock time for the call, including any internal retries, in milliseconds.',
+      ],
+      'success' => [
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Boolean: 1 if the call returned usable output.',
+      ],
+      'error_message' => [
+        'type' => 'text',
+        'not null' => FALSE,
+        'description' => 'Last error message, if the call failed.',
+      ],
+      'created' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Unix timestamp.',
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'operation_created' => ['operation', 'created'],
+      'created' => ['created'],
+      'call_group' => ['call_group'],
+      'context_type_created' => ['context_type', 'created'],
+    ],
+  ];
+
+  $schema['maemgaba_eval_run'] = [
+    'description' => 'Persisted results of maemgaba:eval runs, for comparing accuracy across prompt versions.',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Primary key.',
+      ],
+      'operation' => [
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'description' => 'Operation evaluated (relevance or classify_cluster).',
+      ],
+      'prompt_config_id' => [
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => FALSE,
+        'description' => 'maemgaba_prompt config entity id evaluated.',
+      ],
+      'prompt_hash' => [
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => FALSE,
+        'description' => 'sha256 of the prompt template + system prompt at run time, to detect wording changes between runs.',
+      ],
+      'item_count' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Number of golden-set items replayed.',
+      ],
+      'metrics' => [
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+        'description' => 'JSON-encoded metrics: per-field accuracy, per-class precision/recall, misses, estimated cost.',
+      ],
+      'created' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Unix timestamp.',
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'operation_created' => ['operation', 'created'],
+    ],
+  ];
+
+  $schema['maemgaba_search_log'] = [
+    'description' => 'One row per semantic search, for the Phase 2 Step 2 resume metric: how often keyword search would have returned zero results where vector search found something.',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Primary key.',
+      ],
+      'query' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The search query text.',
+      ],
+      'result_count' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Number of vector-search results after the similarity floor was applied.',
+      ],
+      'top_score' => [
+        'type' => 'float',
+        'size' => 'normal',
+        'not null' => FALSE,
+        'description' => 'Similarity of the best match (1 - distance), NULL if no results.',
+      ],
+      'keyword_would_be_zero' => [
+        'type' => 'int',
+        'size' => 'tiny',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'TRUE if a plain LIKE/fulltext search for the same terms would have returned zero results (the comparison this table exists to measure).',
+      ],
+      'uid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+        'description' => 'User who searched, if authenticated.',
+      ],
+      'created' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Unix timestamp.',
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'created' => ['created'],
+    ],
+  ];
+
+  $schema['maemgaba_suggestion'] = [
+    'description' => 'Anonymous "suggest a correction" submissions against events, moderated at /admin/config/services/news-engine/suggestions.',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Primary key.',
+      ],
+      'event_nid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+        'description' => 'Event node this suggestion is about, if reached from an event page.',
+      ],
+      'type' => [
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'classificacao, agrupamento, fato, fonte or outro.',
+      ],
+      'body' => [
+        'type' => 'text',
+        'not null' => TRUE,
+        'description' => 'The correction description.',
+      ],
+      'url' => [
+        'type' => 'varchar',
+        'length' => 2048,
+        'not null' => FALSE,
+        'description' => 'Optional evidence link.',
+      ],
+      'email' => [
+        'type' => 'varchar',
+        'length' => 254,
+        'not null' => FALSE,
+        'description' => 'Optional contact email, used to notify on acceptance and to match an evaluator account for renewal.',
+      ],
+      'credit_name' => [
+        'type' => 'varchar',
+        'length' => 100,
+        'not null' => FALSE,
+        'description' => 'Optional name to credit on the methodology page if the suggestion is accepted.',
+      ],
+      'uid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+        'description' => 'Submitting user, if authenticated.',
+      ],
+      'ip' => [
+        'type' => 'varchar',
+        'length' => 45,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Client IP at submission time.',
+      ],
+      'status' => [
+        'type' => 'varchar',
+        'length' => 16,
+        'not null' => TRUE,
+        'default' => 'pending',
+        'description' => 'pending, accepted or rejected.',
+      ],
+      'moderation_note' => [
+        'type' => 'text',
+        'not null' => FALSE,
+        'description' => 'Moderator note recorded when the suggestion is decided.',
+      ],
+      'created' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Unix timestamp of submission.',
+      ],
+      'decided' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+        'description' => 'Unix timestamp the suggestion was accepted or rejected.',
+      ],
+      'decided_uid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+        'description' => 'Moderator who decided the suggestion.',
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'status' => ['status'],
+      'created' => ['created'],
+      'event_nid' => ['event_nid'],
+    ],
+  ];
+
+  $schema['maemgaba_source_text'] = _maemgaba_core_source_text_schema();
+  $schema += _maemgaba_core_p9_schema();
+  $schema['maemgaba_ask_log'] = _maemgaba_core_ask_log_schema();
+
+  return $schema;
+}
+
+/**
+ * Schema of the private source-text table (see SourceTextStore).
+ */
+function _maemgaba_core_source_text_schema(): array {
+  return [
+    'description' => 'Private plain text of each card\'s source article, kept only for the verbatim-overlap guard on synthesis output. Never rendered.',
+    'fields' => [
+      'card_nid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Card node id.',
+      ],
+      'event_nid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Parent event node id at the time the card was made.',
+      ],
+      'body' => [
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+        'description' => 'Plain text the classifier saw (full body, or headline + abstract for partial text).',
+      ],
+      'created' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Unix timestamp, for retention purges.',
+      ],
+    ],
+    'primary key' => ['card_nid'],
+    'indexes' => [
+      'event_nid' => ['event_nid'],
+      'created' => ['created'],
+    ],
+  ];
+}
+
+/**
+ * Creates the private source-text table for the verbatim-overlap guard.
+ */
+function maemgaba_core_update_11001(): string {
+  $schema = \Drupal::database()->schema();
+  if ($schema->tableExists('maemgaba_source_text')) {
+    return 'maemgaba_source_text already exists.';
+  }
+  $schema->createTable('maemgaba_source_text', _maemgaba_core_source_text_schema());
+  return 'Created maemgaba_source_text.';
+}
+
+/**
+ * Schemas of the P9 tables: click log, event views, card fingerprints.
+ *
+ * @see \Drupal\maemgaba_core\Service\ClickLog
+ * @see \Drupal\maemgaba_core\Service\SyndicationDetector
+ */
+function _maemgaba_core_p9_schema(): array {
+  $schema['maemgaba_click_log'] = [
+    'description' => 'One row per outbound click through /out/{card}. No IP, cookie or user agent is stored.',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary key.',
+      ],
+      'card_nid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Card node id.',
+      ],
+      'event_nid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Parent event node id at click time.',
+      ],
+      'outlet' => [
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Outlet (sources term) name at click time.',
+      ],
+      'bucket' => [
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Spectrum bucket key of the card at click time.',
+      ],
+      'created' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Unix timestamp of the click.',
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'created' => ['created'],
+      'card_nid' => ['card_nid'],
+    ],
+  ];
+
+  $schema['maemgaba_event_view'] = [
+    'description' => 'Event page views per event and UTC day (the click-through denominator).',
+    'fields' => [
+      'event_nid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Event node id.',
+      ],
+      'day' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'UTC day as YYYYMMDD.',
+      ],
+      'views' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Views counted that day.',
+      ],
+    ],
+    'primary key' => ['event_nid', 'day'],
+    'indexes' => [
+      'day' => ['day'],
+    ],
+  ];
+
+  $schema['maemgaba_card_signature'] = [
+    'description' => 'MinHash fingerprint of each card\'s text, for syndication (reprint) detection. Hashes only, no text.',
+    'fields' => [
+      'card_nid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Card node id.',
+      ],
+      'event_nid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Parent event node id when fingerprinted.',
+      ],
+      'created' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Unix timestamp, bounds the lookback window.',
+      ],
+      'words' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Word count of the text.',
+      ],
+      'shingles' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Distinct 5-word shingles; 0 = too short to compare.',
+      ],
+      'wire' => [
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Wire service whose byline the text carries (syndication.wires), or empty.',
+      ],
+      'signature' => [
+        'type' => 'blob',
+        'not null' => FALSE,
+        'description' => 'Packed MinHash signature (128 x uint32).',
+      ],
+    ],
+    'primary key' => ['card_nid'],
+    'indexes' => [
+      'created' => ['created'],
+    ],
+  ];
+
+  return $schema;
+}
+
+/**
+ * Creates the click log, event view and card fingerprint tables (P9).
+ */
+function maemgaba_core_update_11002(): string {
+  $schema = \Drupal::database()->schema();
+  $created = [];
+  foreach (_maemgaba_core_p9_schema() as $table => $definition) {
+    if (!$schema->tableExists($table)) {
+      $schema->createTable($table, $definition);
+      $created[] = $table;
+    }
+  }
+  return $created ? 'Created ' . implode(', ', $created) . '.' : 'P9 tables already exist.';
+}
+
+/**
+ * Records entity definitions that older installs never stored.
+ *
+ * Both gaps make the status report show "Entity/field definitions:
+ * Mismatched entity and/or field definitions" on a site that grew with the
+ * engine; sites that installed it fresh already have both records, so this
+ * is a no-op there.
+ *
+ * - maemgaba_prompt: maemgaba_core was enabled before the config entity type
+ *   existed, so its last-installed definition was never written. A config
+ *   entity type has no tables; installing it only records the definition.
+ * - node.field_card_count: the stored SQL schema of the field
+ *   (entity.storage_schema.sql) went missing on one production site while both
+ *   tables and their data stayed intact. Re-saving the definition through
+ *   the update manager records it again; with data present and no column
+ *   change, core writes the record and runs no DDL. Skipped when either
+ *   table or its value column is missing, so a real schema gap is never
+ *   papered over.
+ */
+function maemgaba_core_update_11003(): string {
+  $manager = \Drupal::entityDefinitionUpdateManager();
+  $entityTypeManager = \Drupal::entityTypeManager();
+  $done = [];
+
+  if (!$manager->getEntityType('maemgaba_prompt')) {
+    $manager->installEntityType($entityTypeManager->getDefinition('maemgaba_prompt'));
+    $done[] = 'recorded the maemgaba_prompt entity type';
+  }
+
+  $installed = $manager->getFieldStorageDefinition('field_card_count', 'node');
+  $active = $entityTypeManager->getStorage('field_storage_config')->load('node.field_card_count');
+  $schemaKey = 'node.field_schema_data.field_card_count';
+  if ($installed && $active && !\Drupal::keyValue('entity.storage_schema.sql')->has($schemaKey)) {
+    $tableMapping = $entityTypeManager->getStorage('node')->getTableMapping();
+    $column = $tableMapping->getFieldColumnName($active, 'value');
+    $dbSchema = \Drupal::database()->schema();
+    $tables = [
+      $tableMapping->getDedicatedDataTableName($active),
+      $tableMapping->getDedicatedRevisionTableName($active),
+    ];
+    $missing = array_filter($tables, fn (string $table) => !$dbSchema->fieldExists($table, $column));
+    if ($missing) {
+      $done[] = 'left field_card_count alone: ' . implode(', ', $missing) . " has no {$column} column";
+    }
+    else {
+      $manager->updateFieldStorageDefinition($active);
+      $done[] = 'recorded the node.field_card_count SQL schema';
+    }
+  }
+
+  return $done ? ucfirst(implode('; ', $done)) . '.' : 'Entity definitions already recorded.';
+}
+
+/**
+ * Schema of the "Ask the data" log (see AskLog).
+ */
+function _maemgaba_core_ask_log_schema(): array {
+  $int = fn (string $description, bool $null = FALSE) => [
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => !$null,
+    'default' => $null ? NULL : 0,
+    'description' => $description,
+  ];
+  $string = fn (int $length, string $description, string $default = '') => [
+    'type' => 'varchar',
+    'length' => $length,
+    'not null' => TRUE,
+    'default' => $default,
+    'description' => $description,
+  ];
+  $flag = fn (string $description) => [
+    'type' => 'int',
+    'size' => 'tiny',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+    'default' => 0,
+    'description' => $description,
+  ];
+  return [
+    'description' => 'One row per question asked on /ask (or by maemgaba:ask-eval): the SQL, whether it was allowed, rows, time and cost. No IP, cookie or user agent is stored.',
+    'fields' => [
+      'id' => [
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary key.',
+      ],
+      'created' => $int('Unix timestamp.'),
+      'source' => $string(16, 'web (the /ask page) or eval (maemgaba:ask-eval).', 'web'),
+      'question' => $string(512, 'The question as asked (trimmed).'),
+      'question_hash' => $string(64, 'sha256 of the normalized question, to count repeats.'),
+      'outcome' => $string(32, 'answered, no_rows, refused_validator, refused_model, unavailable, rate_limited or error.'),
+      'reason' => $string(64, 'Machine reason for a refusal or error (validator reason code, probe reason, sql_error, ...).'),
+      'detail' => [
+        'type' => 'text',
+        'not null' => FALSE,
+        'description' => 'Offending token, model explanation or database error. Never shown to visitors.',
+      ],
+      'sql_text' => [
+        'type' => 'text',
+        'not null' => FALSE,
+        'description' => 'The SQL the model wrote (as validated, LIMIT added).',
+      ],
+      'valid' => $flag('1 when the validator accepted the SQL.'),
+      'row_count' => $int('Rows returned (capped).', TRUE),
+      'latency_ms' => $int('Total time to answer, milliseconds.'),
+      'sql_ms' => $int('Time the SELECT took, milliseconds.', TRUE),
+      'model' => $string(128, 'provider/model of the SQL step.'),
+      'input_tokens' => $int('Input tokens over both AI steps.', TRUE),
+      'output_tokens' => $int('Output tokens over both AI steps.', TRUE),
+      'cost_usd' => [
+        'type' => 'numeric',
+        'precision' => 10,
+        'scale' => 6,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Estimated cost of both AI steps (AiPricing), US dollars.',
+      ],
+      'cached' => $flag('1 when served from the answer cache (no AI call).'),
+      'call_groups' => $string(64, 'maemgaba_ai_call_log call_group ids of the AI steps, space separated.'),
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'created' => ['created'],
+      'outcome_created' => ['outcome', 'created'],
+    ],
+  ];
+}
+
+/**
+ * Creates the "Ask the data" log table.
+ */
+function maemgaba_core_update_11004(): string {
+  $schema = \Drupal::database()->schema();
+  if ($schema->tableExists('maemgaba_ask_log')) {
+    return 'maemgaba_ask_log already exists.';
+  }
+  $schema->createTable('maemgaba_ask_log', _maemgaba_core_ask_log_schema());
+  return 'Created maemgaba_ask_log.';
+}

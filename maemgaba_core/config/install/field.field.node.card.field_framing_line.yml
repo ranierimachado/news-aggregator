@@ -1,0 +1,18 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_framing_line
+    - node.type.card
+id: node.card.field_framing_line
+field_name: field_framing_line
+entity_type: node
+bundle: card
+label: 'Framing Line'
+description: "One-sentence paraphrase of the outlet's angle, displayed instead of an excerpt (copyright policy: no per-article summaries or ledes)."
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

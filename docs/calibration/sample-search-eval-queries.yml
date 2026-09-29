@@ -1,0 +1,35 @@
+# Sample query set for `drush maemgaba:search-eval`. A real set pairs each
+# query with the nid of the event it should find on that site; these nids
+# refer to the events a site would hold after seeding the sample pack, so
+# replace them with your own. expected_nid null = an off-topic query that a
+# good engine rejects.
+queries:
+  - id: q1
+    type: paraphrase
+    query: 'dredging money for the big ports'
+    expected_nid: 1
+    expected_title: 'Senate passes harbor dredging bill'
+  - id: q2
+    type: paraphrase
+    query: 'why did the central bank not cut rates'
+    expected_nid: 2
+    expected_title: 'Central bank holds rates'
+  - id: q3
+    type: entity
+    query: 'Data Privacy Act ruling'
+    expected_nid: 3
+    also_accept: [4]
+    expected_title: 'Court strikes down parts of the Data Privacy Act'
+  - id: q4
+    type: paraphrase
+    query: 'light rail payroll tax vote'
+    expected_nid: 5
+    expected_title: 'Transit levy referendum set for October'
+  - id: q5
+    type: off_topic
+    query: 'best pasta recipe for a weeknight'
+    expected_nid: null
+  - id: q6
+    type: off_topic
+    query: 'how to renew a passport'
+    expected_nid: null

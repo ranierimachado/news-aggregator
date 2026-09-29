@@ -1,0 +1,8 @@
+name: 'News Engine monitor'
+type: module
+version: 1.0.0
+description: 'Daily and monthly AI cost and usage dashboard for the News Engine pipeline: items processed, tokens per item and event, estimated spend.'
+package: News Engine
+core_version_requirement: ^10 || ^11
+dependencies:
+  - maemgaba_core:maemgaba_core

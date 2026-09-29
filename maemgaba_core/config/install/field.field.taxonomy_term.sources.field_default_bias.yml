@@ -1,0 +1,20 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.taxonomy_term.field_default_bias
+    - taxonomy.vocabulary.sources
+  module:
+    - options
+id: taxonomy_term.sources.field_default_bias
+field_name: field_default_bias
+entity_type: taxonomy_term
+bundle: sources
+label: 'Default Bias'
+description: 'Legacy, derived from the bias score on save. Removed next release.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_string

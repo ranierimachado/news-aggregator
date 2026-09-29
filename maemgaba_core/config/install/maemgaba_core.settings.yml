@@ -1,0 +1,49 @@
+events_index: events
+clustering_retrieval: recency
+clustering_max_distance: 0.35
+search_public: false
+search_flood:
+  limit: 30
+  window: 600
+search_max_distance: 0.32
+ask:
+  enabled: false
+  flood:
+    limit: 20
+    window: 3600
+  cache_ttl: 600
+  max_rows: 200
+  statement_timeout: 5
+  max_question_length: 300
+  answer_rows: 50
+  examples: {  }
+explore:
+  index: solr_events
+  default_mode: hybrid
+  vector_weight: 10.0
+  min_similarity: 0.8
+review_since: 0
+pipeline_uid: 0
+consensus_mode: lazy_top5
+golden_set_path: ''
+operation_models: {  }
+balance_levels:
+  -
+    min: 70
+    label: BALANCED
+  -
+    min: 0
+    label: MODERATE
+divergence_levels:
+  -
+    key: high
+    min: 25
+    label: HIGH
+  -
+    key: moderate
+    min: 15
+    label: MODERATE
+  -
+    key: low
+    min: 0
+    label: LOW

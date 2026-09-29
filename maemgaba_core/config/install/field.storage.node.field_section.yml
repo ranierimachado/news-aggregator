@@ -1,0 +1,26 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+    - options
+id: node.field_section
+field_name: field_section
+entity_type: node
+type: list_string
+settings:
+  allowed_values:
+    -
+      value: news
+      label: News
+    -
+      value: opinion
+      label: Opinion
+  allowed_values_function: ''
+module: options
+locked: false
+cardinality: 1
+translatable: false
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

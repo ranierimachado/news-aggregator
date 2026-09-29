@@ -1,0 +1,16 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - text
+    - node
+id: node.field_raw_html_body
+field_name: field_raw_html_body
+entity_type: node
+type: text_long
+module: text
+settings: {}
+cardinality: 1
+translatable: false
+persist_with_no_fields: false
+custom_storage: false

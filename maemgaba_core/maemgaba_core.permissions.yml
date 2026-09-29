@@ -1,0 +1,28 @@
+administer ai prompts:
+  title: 'Administer News Engine AI prompts'
+  description: 'Create, edit and delete the AI prompt templates used by the news pipeline.'
+  restrict access: true
+
+administer news engine pipeline:
+  title: 'Administer News Engine pipeline'
+  description: 'Run the harvest, process, backfill and event-rollup pipeline actions.'
+  restrict access: true
+
+view news engine ai stats:
+  title: 'View News Engine AI stats'
+  description: 'View the AI call-log and eval-run dashboard (cost, latency, accuracy).'
+  restrict access: true
+
+administer news engine semantic search:
+  title: 'Administer semantic search'
+  description: 'Run test queries against the semantic/vector search engines over events.'
+  restrict access: true
+
+access news engine semantic search:
+  title: 'Access semantic search'
+  description: 'Use the semantic search page over events. Not public — evaluator-only while the feature is being trialed.'
+
+moderate news engine suggestions:
+  title: 'Moderate correction suggestions'
+  description: 'Approve or reject "suggest a correction" submissions and grant/renew evaluator search access.'
+  restrict access: true

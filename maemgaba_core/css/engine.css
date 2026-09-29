@@ -1,0 +1,60 @@
+/**
+ * @file
+ * Structure for the engine's templates: grids, bars, dots. No brand.
+ *
+ * Colours come from CSS custom properties: --bucket-KEY-color (one per
+ * spectrum bucket, injected on every page by maemgaba_core from
+ * maemgaba_core.spectrum) and --bucket-color (set per element by the
+ * templates from the former). Themes carry fonts, spacing, borders and
+ * brand colours, and may redefine any --bucket-KEY-color; theme CSS is
+ * always loaded after this file, so a theme rule with the same selector
+ * wins.
+ */
+
+/* Spectrum bar (spectrum_bar theme hook). */
+.spectrum-bar { display: flex; width: 100%; height: 8px; overflow: hidden; }
+.spectrum-bar--large { height: 10px; }
+.spectrum-bar--small { height: 6px; }
+.spectrum-bar__segment { height: 100%; background: var(--bucket-color, currentColor); }
+
+/* Bucket-coloured dots and labels. */
+.bias-dot,
+.count-item .dot,
+.event-teaser__counts-dots .dot,
+.source-bias .dot,
+.methodology-step__icon--dots .dot,
+.methodology-step__spectrum-seg { background: var(--bucket-color, currentColor); }
+.source-bias { color: var(--bucket-color, inherit); }
+
+/* Event page: one column per bucket. */
+.maemgaba-perspective-grid { display: grid; grid-template-columns: repeat(var(--bucket-count, 3), minmax(0, 1fr)); gap: 16px; }
+.bias-column, .cards-stack { display: flex; flex-direction: column; gap: 12px; }
+.spectrum-labels { display: flex; justify-content: space-between; }
+
+/* Consensus / dispute box. */
+.consensus-grid { display: grid; grid-template-columns: 1fr 1fr; }
+.consensus-grid--pending { grid-template-columns: 1fr; justify-items: center; }
+.consensus-list { list-style: none; margin: 0; padding: 0; }
+.consensus-item { display: flex; gap: 12px; }
+
+/* Home: event grid + infinite-scroll sentinel. */
+.home-events__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.home-events__sentinel { grid-column: 1 / -1; text-align: center; }
+.home-events__loading { opacity: 0; transition: opacity 0.2s ease; }
+.home-events__sentinel.is-loading .home-events__loading { opacity: 1; }
+
+/* Reprints listed under the card they copy; the opinion strip. */
+.card-syndicated { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.event-opinion-strip__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+
+/* Methodology pipeline icons. */
+.methodology-step__spectrum { display: flex; }
+.methodology-step__spectrum-seg { flex: 1; }
+
+@media (max-width: 1000px) {
+  .home-events__grid { grid-template-columns: repeat(2, 1fr); }
+  .maemgaba-perspective-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) {
+  .home-events__grid, .consensus-grid { grid-template-columns: 1fr; }
+}

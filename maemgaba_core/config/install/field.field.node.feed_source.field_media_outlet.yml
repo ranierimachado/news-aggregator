@@ -1,0 +1,14 @@
+langcode: pt-br
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_media_outlet
+    - node.type.feed_source
+id: node.feed_source.field_media_outlet
+field_name: field_media_outlet
+entity_type: node
+bundle: feed_source
+label: Outlet
+required: true
+field_type: string
+settings: {}

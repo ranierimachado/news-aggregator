@@ -1,0 +1,25 @@
+{#
+/**
+ * @file
+ * Thank-you page after a correction suggestion, with the evaluator upsell
+ * (temporary semantic-search access in exchange for registering).
+ *
+ * Available variables:
+ * - site_name: the site name (system.site).
+ */
+#}
+<div class="suggestion-thanks-page">
+  <h2 class="suggestion-thanks__title">{{ 'Thank you!'|t }}</h2>
+  <p class="suggestion-thanks__lede">
+    {{ 'Your correction was sent and will be reviewed by our team. Every correction helps improve @site.'|t({'@site': site_name}) }}
+  </p>
+
+  <div class="suggestion-thanks__upsell">
+    <p class="kicker">{{ 'Want to help more?'|t }}</p>
+    <h3 class="suggestion-thanks__upsell-title">{{ 'Sign up as an evaluator'|t }}</h3>
+    <p class="suggestion-thanks__upsell-text">
+      {{ 'Get 10 days of access to @site semantic search. Accepted corrections renew your access.'|t({'@site': site_name}) }}
+    </p>
+    <a class="suggestion-thanks__upsell-cta" href="{{ path('maemgaba_core.evaluator_register') }}">{{ 'Sign up as an evaluator →'|t }}</a>
+  </div>
+</div>

@@ -1,0 +1,182 @@
+[
+  {
+    "id": 1,
+    "title": "Senate passes harbor dredging bill after months of delay",
+    "body_excerpt": "The Senate approved the Harbor Renewal Act on Tuesday by 61 votes to 38, sending the five-year dredging programme to the Assembly. The bill funds channel deepening in the three largest ports and a maintenance fund for smaller harbors. Supporters from both parties said the ports had lost container traffic to neighbouring countries; opponents questioned the cost estimate and asked for an independent audit before the first contracts are signed.",
+    "expected": {
+      "bias": "center",
+      "social_relevance": "relevant",
+      "topic": "politics"
+    }
+  },
+  {
+    "id": 2,
+    "title": "Dredging bill hands port operators a windfall while coastal towns wait",
+    "body_excerpt": "The Harbor Renewal Act passed the Senate with money flowing first to the three commercial ports run by private concessionaires, and only a fraction reserved for the fishing towns whose harbors silt up every winter. Coastal mayors said they had been promised a bigger share. The bill's sponsors did not answer questions about how the maintenance fund will be divided.",
+    "expected": {
+      "bias": "left",
+      "social_relevance": "relevant",
+      "topic": "politics"
+    }
+  },
+  {
+    "id": 3,
+    "title": "Harbor bill finally ends years of obstruction on port investment",
+    "body_excerpt": "After years in which the ports were left to decay, the Senate has passed the Harbor Renewal Act, over the objections of members who have blocked every infrastructure bill this term. The programme will restore the country's competitiveness in container shipping and create thousands of construction jobs. Critics offered no alternative beyond another audit.",
+    "expected": {
+      "bias": "right",
+      "social_relevance": "relevant",
+      "topic": "politics"
+    }
+  },
+  {
+    "id": 4,
+    "title": "Central bank holds rates, signals cut in spring",
+    "body_excerpt": "The central bank kept its policy rate at 4.25 percent on Thursday and said inflation was easing in line with its forecast. The statement noted weaker consumer demand and a stable currency. Analysts read the wording as preparing markets for a first cut at the spring meeting, though the governor said the decision would depend on wage data.",
+    "expected": {
+      "bias": "center",
+      "social_relevance": "relevant",
+      "topic": "economy"
+    }
+  },
+  {
+    "id": 5,
+    "title": "Rate freeze prolongs the squeeze on households as prices stay high",
+    "body_excerpt": "The central bank chose to hold rates again, extending the pressure on families paying record mortgage costs while corporate profits remain strong. Consumer groups said the bank was protecting lenders. The governor promised relief in the spring but gave no commitment.",
+    "expected": {
+      "bias": "left",
+      "social_relevance": "relevant",
+      "topic": "economy"
+    }
+  },
+  {
+    "id": 6,
+    "title": "Bank resists pressure to cut, keeps inflation fight on track",
+    "body_excerpt": "The central bank held firm on Thursday, refusing calls from the government and unions for an early rate cut that would have risked reigniting inflation. Business groups welcomed the decision as a sign the bank remains independent. A spring cut is possible if the data allow it.",
+    "expected": {
+      "bias": "right",
+      "social_relevance": "relevant",
+      "topic": "economy"
+    }
+  },
+  {
+    "id": 7,
+    "title": "Court strikes down parts of the Data Privacy Act",
+    "body_excerpt": "The Constitutional Court ruled on Wednesday that two articles of the Data Privacy Act violate the right to free expression, while upholding the rest of the law. The struck articles allowed regulators to order the removal of published personal data without a judicial hearing. The government said it would amend the law within the year.",
+    "expected": {
+      "bias": "center",
+      "social_relevance": "relevant",
+      "topic": "justice"
+    }
+  },
+  {
+    "id": 8,
+    "title": "Court gutting of privacy law leaves citizens exposed to data brokers",
+    "body_excerpt": "The Constitutional Court removed the fastest remedy ordinary people had against companies publishing their personal data, siding with media and technology lobbies. Privacy advocates called the ruling a setback for victims of harassment. The government's promised amendment has no timetable.",
+    "expected": {
+      "bias": "left",
+      "social_relevance": "relevant",
+      "topic": "justice"
+    }
+  },
+  {
+    "id": 9,
+    "title": "Court defends free speech against censorship clauses in privacy law",
+    "body_excerpt": "The Constitutional Court struck down the censorship clauses of the Data Privacy Act, which had let regulators erase published information without a judge. Press associations celebrated the decision as a victory for free expression. The rest of the law stands.",
+    "expected": {
+      "bias": "right",
+      "social_relevance": "relevant",
+      "topic": "justice"
+    }
+  },
+  {
+    "id": 10,
+    "title": "Transit levy referendum set for October",
+    "body_excerpt": "Voters in the capital region will decide in October whether to approve a payroll levy funding two new light-rail lines. The regional council fixed the date on Monday. The levy would raise an estimated 1.2 billion over ten years; the council's own forecast assumes ridership growth that the auditor called optimistic.",
+    "expected": {
+      "bias": "center",
+      "social_relevance": "relevant",
+      "topic": "politics"
+    }
+  },
+  {
+    "id": 11,
+    "title": "Wildfire season opens early as drought persists in the north",
+    "body_excerpt": "Firefighters contained the first large wildfire of the year near Northgate on Sunday, six weeks earlier than the seasonal average. The meteorological service reported rainfall at 40 percent of normal since January. The environment ministry said it had hired additional crews.",
+    "expected": {
+      "bias": "center",
+      "social_relevance": "relevant",
+      "topic": "environment"
+    }
+  },
+  {
+    "id": 12,
+    "title": "Ministers fiddle with hiring while the north burns",
+    "body_excerpt": "The government's answer to the earliest wildfire on record was a press release about seasonal hiring, while its own climate adaptation plan sits unfunded for a third year. Northern mayors said they had warned of the drought since winter.",
+    "expected": {
+      "bias": "left",
+      "social_relevance": "relevant",
+      "topic": "environment"
+    }
+  },
+  {
+    "id": 13,
+    "title": "Fire crews praised for fast containment of Northgate blaze",
+    "body_excerpt": "Volunteer and professional crews brought the Northgate fire under control within a day, thanks in part to the new equipment purchased last year. Officials said the early season was a reminder to clear brush around properties, and rejected claims that the response had been slow.",
+    "expected": {
+      "bias": "right",
+      "social_relevance": "relevant",
+      "topic": "environment"
+    }
+  },
+  {
+    "id": 14,
+    "title": "National team qualifies for the continental championship",
+    "body_excerpt": "A late goal in Ironbridge secured the national team's place in next summer's continental championship. The coach said the squad had matured; the federation expects to announce friendly matches next month.",
+    "expected": {
+      "bias": "center",
+      "social_relevance": "irrelevant",
+      "topic": "sports"
+    }
+  },
+  {
+    "id": 15,
+    "title": "Hospital waiting times fall for the first time in four years",
+    "body_excerpt": "Average waiting time for non-urgent surgery fell to 14 weeks in the second quarter, the health ministry reported, the first decline since 2022. The ministry credited additional operating capacity; the doctors' union said the figure excluded patients removed from lists after missing appointments.",
+    "expected": {
+      "bias": "center",
+      "social_relevance": "relevant",
+      "topic": "health"
+    }
+  },
+  {
+    "id": 16,
+    "title": "Hospital figures massaged as patients quietly dropped from lists",
+    "body_excerpt": "The ministry's celebrated fall in waiting times owes much to the removal of thousands of patients who missed a single appointment, according to the doctors' union. The minister did not dispute the practice. Patient groups called for an independent count.",
+    "expected": {
+      "bias": "left",
+      "social_relevance": "relevant",
+      "topic": "health"
+    }
+  },
+  {
+    "id": 17,
+    "title": "Museum reopens after restoration of the harbor wing",
+    "body_excerpt": "The Maritime Museum reopened its harbor wing on Saturday after a two-year restoration. The new galleries trace the port's history from the sail era to container shipping. Entry is free for the first month.",
+    "expected": {
+      "bias": "center",
+      "social_relevance": "irrelevant",
+      "topic": "general"
+    }
+  },
+  {
+    "id": 18,
+    "title": "Opposition demands inquiry into port concession contracts",
+    "body_excerpt": "The opposition asked the Assembly on Friday to open an inquiry into the concession contracts of the three commercial ports, citing the auditor's finding that renewal terms were agreed without competitive bids. The government said the contracts predate it and that an inquiry would delay the dredging programme.",
+    "expected": {
+      "bias": "center",
+      "social_relevance": "relevant",
+      "topic": "politics"
+    }
+  }
+]

@@ -1,0 +1,21 @@
+{#
+/**
+ * @file
+ * The sources page: section head, intro and the outlet table.
+ *
+ * Available variables:
+ * - source_list: render array (source_list theme hook).
+ */
+#}
+<div class="sources-page">
+  <div class="section-head">
+    <h2 class="section-head__title">{{ 'Sources'|t }}</h2>
+    <span class="section-head__subtitle">{{ 'Monitored outlets and their editorial divergence.'|t }}</span>
+  </div>
+
+  <p class="sources-intro">
+    {{ 'High divergence is not an error: it marks an outlet whose coverage of specific events departs from its historical editorial line, a useful signal for readers and editors.'|t }}
+  </p>
+
+  {{ source_list }}
+</div>

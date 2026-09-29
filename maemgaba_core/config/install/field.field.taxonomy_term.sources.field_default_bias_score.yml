@@ -1,0 +1,22 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.taxonomy_term.field_default_bias_score
+    - taxonomy.vocabulary.sources
+id: taxonomy_term.sources.field_default_bias_score
+field_name: field_default_bias_score
+entity_type: taxonomy_term
+bundle: sources
+label: 'Default bias score'
+description: "The outlet's declared editorial line on the -2..+2 scale; the sources page measures divergence against it."
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: -2
+  max: 2
+  prefix: ''
+  suffix: ''
+field_type: integer

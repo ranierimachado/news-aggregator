@@ -1,0 +1,125 @@
+{#
+/**
+ * @file
+ * The /ask page ("Ask the data").
+ *
+ * Available variables:
+ * - state: intro, answered, no_rows, refused_model, refused_validator,
+ *   unavailable, rate_limited or error.
+ * - question: the question as asked ('' on the intro state).
+ * - examples: example questions (strings); each is a submit button.
+ * - result: NULL on the intro state, else:
+ *   - sentence, explanation, sql, columns, rows (lists of strings),
+ *     row_count, row_cap, single_value (the lone cell of a 1×1 result, or
+ *     NULL), cached, latency_s, model, refusal (friendly message).
+ * - max_length: longest question accepted.
+ * - form_action: URL the form posts to.
+ * - methodology_url: link to the "how this works" section.
+ * - max_rows: the row cap.
+ * - flood_limit, flood_minutes: the per-connection question limit.
+ *
+ * Structure only; the theme styles it. Questions go by POST so links never
+ * trigger a model call.
+ */
+#}
+{% set refused = state in ['refused_model', 'refused_validator', 'unavailable', 'rate_limited', 'error'] %}
+<div class="ask ask--{{ state|clean_class }}">
+  <div class="busca-hero ask-hero">
+    <h2 class="busca-hero__title">{{ 'Ask the data'|t }} <span class="ask-badge">{{ 'AI'|t }}</span></h2>
+    <p class="busca-hero__description">{{ 'Ask a question about the stories and sources on this site. An AI model writes a database query, a safety check approves it, and you see the query, the rows and a one-line answer.'|t }}</p>
+  </div>
+
+  <form class="busca-form ask-form" method="post" action="{{ form_action }}" accept-charset="UTF-8">
+    <label class="visually-hidden" for="ask-question">{{ 'Your question'|t }}</label>
+    <input id="ask-question" class="busca-form__input ask-form__input" type="text" name="q" value="{{ question }}" maxlength="{{ max_length }}" required placeholder="{{ examples|first ? 'E.g. @example'|t({'@example': examples|first}) : '' }}" autocomplete="off">
+    <button class="busca-form__submit ask-form__submit" type="submit">{{ 'Ask →'|t }}</button>
+
+    {% if examples %}
+      <div class="busca-examples ask-examples">
+        <span class="busca-examples__label">{{ 'Try'|t }}</span>
+        {% for example in examples %}
+          <button class="busca-examples__chip ask-examples__chip" type="submit" name="example" value="{{ example }}" formnovalidate>{{ example }}</button>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </form>
+
+  {% if state == 'intro' %}
+    <div class="busca-features ask-features">
+      <div>
+        <h3 class="busca-features__label">{{ 'Read-only'|t }}</h3>
+        <p class="busca-features__text">{{ 'The query runs as a database user that can only read four summary views: stories, sources, outlets and days. Nothing can be changed.'|t }}</p>
+      </div>
+      <div>
+        <h3 class="busca-features__label">{{ 'Checked first'|t }}</h3>
+        <p class="busca-features__text">{{ 'Every query passes a safety check before it runs: one SELECT, allowed views only, no system tables, at most @rows rows, a few seconds at most.'|t({'@rows': max_rows}) }}</p>
+      </div>
+      <div>
+        <h3 class="busca-features__label">{{ 'Shown, not hidden'|t }}</h3>
+        <p class="busca-features__text">{{ 'You see the exact query and the rows it returned, so you can judge the answer yourself.'|t }}</p>
+      </div>
+    </div>
+  {% else %}
+    <section class="ask-result" aria-live="polite" aria-labelledby="ask-result-title">
+      <h3 id="ask-result-title" class="ask-result__question">{{ question }}</h3>
+
+      {% if refused %}
+        <div class="ask-notice ask-notice--{{ state|clean_class }}" role="status">
+          <p class="ask-notice__text">{{ result.refusal }}</p>
+          {% if state == 'rate_limited' %}
+            <p class="ask-notice__hint">{{ 'The limit is @n questions per connection every @m minutes, because each new question costs an AI call.'|t({'@n': flood_limit, '@m': flood_minutes}) }}</p>
+          {% elseif state in ['refused_model', 'refused_validator'] %}
+            <p class="ask-notice__hint">{{ 'Questions work best when they ask for counts, averages or rankings of stories, sources, outlets, topics, bias buckets or days.'|t }}</p>
+          {% endif %}
+        </div>
+      {% else %}
+        <p class="ask-answer">
+          <span class="ask-answer__label">{{ 'AI answer'|t }}</span>
+          {{ result.sentence ?: 'Here are the rows the query returned.'|t }}
+        </p>
+
+        {% if state == 'no_rows' %}
+          <p class="ask-empty">{{ 'The query ran and returned no rows. The site may not have data for this yet, or the question may need different words.'|t }}</p>
+        {% elseif result.single_value is not null %}
+          <p class="ask-number"><span class="ask-number__value">{{ result.single_value }}</span> <span class="ask-number__label">{{ result.columns|first|replace({'_': ' '}) }}</span></p>
+        {% else %}
+          <div class="ask-table-wrap" role="region" aria-label="{{ 'Query results'|t }}" tabindex="0">
+            <table class="ask-table">
+              <thead>
+                <tr>
+                  {% for column in result.columns %}
+                    <th scope="col">{{ column|replace({'_': ' '}) }}</th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in result.rows %}
+                  <tr>
+                    {% for value in row %}
+                      <td>{{ value }}</td>
+                    {% endfor %}
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <p class="ask-meta">
+            {{ result.row_count == 1 ? '1 row'|t : '@count rows'|t({'@count': result.row_count}) }}{% if result.row_count >= result.row_cap %} · {{ 'capped at @cap'|t({'@cap': result.row_cap}) }}{% endif %}
+          </p>
+        {% endif %}
+      {% endif %}
+
+      {% if result.sql %}
+        <details class="ask-sql">
+          <summary>{{ 'Show the SQL'|t }}</summary>
+          <pre><code>{{ result.sql }}</code></pre>
+          {% if result.explanation %}<p class="ask-sql__explanation">{{ result.explanation }}</p>{% endif %}
+        </details>
+      {% endif %}
+
+      <p class="ask-disclaimer">
+        {{ 'AI-generated, may be wrong.'|t }} <a href="{{ methodology_url }}">{{ 'See how this works'|t }}</a>{% if result.cached %} · {{ 'answered from the last few minutes'|t }}{% elseif result.latency_s and not refused %} · {{ '@s s'|t({'@s': result.latency_s}) }}{% endif %}
+      </p>
+    </section>
+  {% endif %}
+</div>

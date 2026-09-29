@@ -1,0 +1,20 @@
+langcode: pt-br
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_card_count
+    - node.type.event
+id: node.event.field_card_count
+field_name: field_card_count
+entity_type: node
+bundle: event
+label: Card count
+description: 'Number of published cards linked to this event. Maintained by EventRelevanceService; do not edit by hand.'
+required: false
+translatable: false
+default_value:
+  -
+    value: 0
+default_value_callback: ''
+settings: {}
+field_type: integer

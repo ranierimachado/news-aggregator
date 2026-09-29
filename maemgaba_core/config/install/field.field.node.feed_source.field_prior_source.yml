@@ -1,0 +1,18 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_prior_source
+    - node.type.feed_source
+id: node.feed_source.field_prior_source
+field_name: field_prior_source
+entity_type: node
+bundle: feed_source
+label: 'Prior Source'
+description: "Where the published_prior rating came from and when, e.g. 'AllSides 2026-09'."
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: string

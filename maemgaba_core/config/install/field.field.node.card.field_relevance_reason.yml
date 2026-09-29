@@ -1,0 +1,20 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_relevance_reason
+    - node.type.card
+  module:
+    - text
+id: node.card.field_relevance_reason
+field_name: field_relevance_reason
+entity_type: node
+bundle: card
+label: Relevance reason
+description: 'Short AI sentence justifying the assigned social relevance.'
+required: false
+translatable: false
+default_value: {}
+default_value_callback: ''
+settings: {}
+field_type: text_long

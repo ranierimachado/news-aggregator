@@ -1,0 +1,35 @@
+topics:
+  -
+    key: politics
+    label: Politics
+  -
+    key: economy
+    label: Economy
+  -
+    key: justice
+    label: Justice
+  -
+    key: security
+    label: 'Public safety'
+  -
+    key: international
+    label: International
+  -
+    key: society
+    label: 'Society and rights'
+  -
+    key: sports
+    label: Sports
+  -
+    key: culture
+    label: 'Culture and entertainment'
+  -
+    key: health
+    label: Health
+  -
+    key: science
+    label: 'Science and technology'
+  -
+    key: general
+    label: 'General / other'
+fallback: general

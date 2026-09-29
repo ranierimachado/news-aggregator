@@ -1,0 +1,38 @@
+# Five display buckets over the shared -2..+2 score. Buckets must cover the
+# scale exactly once, in order; keys become CSS classes.
+buckets:
+  -
+    key: left
+    label: Left
+    short_label: L
+    min_score: -2
+    max_score: -2
+    color: '#1d5fa8'
+  -
+    key: lean_left
+    label: 'Lean left'
+    short_label: LL
+    min_score: -1
+    max_score: -1
+    color: '#6f9bd1'
+  -
+    key: center
+    label: Center
+    short_label: C
+    min_score: 0
+    max_score: 0
+    color: '#9b9797'
+  -
+    key: lean_right
+    label: 'Lean right'
+    short_label: LR
+    min_score: 1
+    max_score: 1
+    color: '#e58a76'
+  -
+    key: right
+    label: Right
+    short_label: R
+    min_score: 2
+    max_score: 2
+    color: '#ec3013'

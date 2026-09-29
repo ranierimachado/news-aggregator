@@ -1,0 +1,22 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_default_bias_score
+    - node.type.feed_source
+id: node.feed_source.field_default_bias_score
+field_name: field_default_bias_score
+entity_type: node
+bundle: feed_source
+label: 'Declared bias score'
+description: "The outlet's declared editorial line on the -2..+2 scale."
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: -2
+  max: 2
+  prefix: ''
+  suffix: ''
+field_type: integer

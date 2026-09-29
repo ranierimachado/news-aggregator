@@ -1,0 +1,20 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_section
+    - node.type.feed_source
+  module:
+    - options
+id: node.feed_source.field_section
+field_name: field_section
+entity_type: node
+bundle: feed_source
+label: 'Section'
+description: 'News or opinion, as declared for this feed. Split registries at the feed level so opinion never gets ingested as news.'
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_string

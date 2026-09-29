@@ -1,0 +1,23 @@
+{#
+/**
+ * @file
+ * Bias spectrum bar: one segment per configured bucket, in spectrum order.
+ *
+ * Available variables:
+ * - segments: list of {key, color, width}; width is a percentage (0..100).
+ *   Widths are computed by the caller (exact share on the event page,
+ *   integer percentages elsewhere) so the markup stays a pure view.
+ * - size: '' (default), 'large' or 'small', rendered as a
+ *   spectrum-bar--SIZE modifier class.
+ *
+ * Colours: every segment sets --bucket-color from the site-wide
+ * --bucket-KEY-color custom property, which maemgaba_core injects from
+ * maemgaba_core.spectrum (hook_page_attachments) and a theme may override.
+ * The bucket key is also a class, so a theme can style per key.
+ */
+#}
+<div class="spectrum-bar{{ size ? ' spectrum-bar--' ~ size }}">
+  {% for segment in segments %}
+    <div class="spectrum-bar__segment spectrum-bar__segment--{{ segment.key }}" style="--bucket-color: var(--bucket-{{ segment.key }}-color, {{ segment.color }}); width: {{ segment.width }}%"></div>
+  {% endfor %}
+</div>

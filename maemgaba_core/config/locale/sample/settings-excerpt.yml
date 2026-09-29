@@ -1,0 +1,26 @@
+# Excerpt: locale-pack keys only. Merge into the site's maemgaba_core.settings.
+# golden_set_path is relative to the project root first, then to the module
+# directory, so this value finds the shipped sample when no site copy exists.
+consensus_mode: lazy_top5
+golden_set_path: config/locale/sample/golden/classify_cluster.json
+http_user_agent: 'ExampleNews/1.0 (+https://www.example.com/methodology)'
+balance_levels:
+  -
+    min: 70
+    label: BALANCED
+  -
+    min: 0
+    label: MODERATE
+divergence_levels:
+  -
+    key: high
+    min: 25
+    label: HIGH
+  -
+    key: moderate
+    min: 15
+    label: MODERATE
+  -
+    key: low
+    min: 0
+    label: LOW

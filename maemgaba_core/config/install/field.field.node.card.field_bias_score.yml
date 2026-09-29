@@ -1,0 +1,22 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_bias_score
+    - node.type.card
+id: node.card.field_bias_score
+field_name: field_bias_score
+entity_type: node
+bundle: card
+label: 'Bias score'
+description: 'Canonical bias on the shared scale: -2 strongly left, -1 leans left, 0 center, +1 leans right, +2 strongly right. The site spectrum config decides how it is displayed.'
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  min: -2
+  max: 2
+  prefix: ''
+  suffix: ''
+field_type: integer

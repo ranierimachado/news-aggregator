@@ -1,0 +1,17 @@
+# gitleaks configuration for the public engine repository.
+# Default rules apply; the allowlist only covers the synthetic fixtures.
+title = "news-aggregator"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Synthetic sample data and CI service placeholders"
+paths = [
+  '''maemgaba_core/config/locale/sample/.*''',
+  '''docs/calibration/sample-.*\.yml''',
+]
+regexes = [
+  '''mysql://drupal:drupal@127\.0\.0\.1''',
+  '''mysql://user:pass@127\.0\.0\.1''',
+]

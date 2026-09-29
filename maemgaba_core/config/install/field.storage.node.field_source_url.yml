@@ -1,0 +1,16 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - link
+    - node
+id: node.field_source_url
+field_name: field_source_url
+entity_type: node
+type: link
+module: link
+settings: {}
+cardinality: 1
+translatable: false
+persist_with_no_fields: false
+custom_storage: false

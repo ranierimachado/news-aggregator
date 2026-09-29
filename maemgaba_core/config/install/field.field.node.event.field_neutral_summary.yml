@@ -1,0 +1,20 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_neutral_summary
+    - node.type.event
+  module:
+    - text
+id: node.event.field_neutral_summary
+field_name: field_neutral_summary
+entity_type: node
+bundle: event
+label: 'Neutral Summary'
+description: 'An objective, neutral description of what happened in this event.'
+required: true
+translatable: false
+default_value: {}
+default_value_callback: ''
+settings: {}
+field_type: text_long

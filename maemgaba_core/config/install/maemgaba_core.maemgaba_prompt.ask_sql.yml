@@ -1,0 +1,48 @@
+langcode: en
+status: true
+dependencies: {  }
+id: ask_sql
+label: 'Ask the data: question to SQL'
+description: "Writes one read-only MariaDB SELECT over the ask_* views for a visitor's question on /ask, or declines. The validator and the read-only database user still check whatever it writes."
+operation: ask_sql
+system_prompt: 'You write read-only MariaDB queries for the "Ask the data" page of [site_name], a news site that groups articles from many outlets into stories and rates each article''s political bias. Always answer with valid JSON and no text outside the JSON.'
+template: |
+  Write one read-only SQL query that answers the visitor's question about the coverage on [site_name].
+
+  Today is [today]. Time zone: [timezone]. Every date and time in the views is already local.
+  Dialect: [dialect].
+
+  You may read ONLY these four views. There are no other tables.
+
+  [ask_schema]
+
+  Bias buckets, left to right: [bucket_list].
+  Topic keys: [topic_list].
+
+  Rules:
+  1. Return exactly one SELECT statement (WITH ... SELECT is fine). Never write anything that changes data, and never read anything except the four views.
+  2. Use only the column names listed above. Give every computed column a name with AS, e.g. COUNT(*) AS sources. When you join, give each view an alias with AS and qualify every column.
+  3. Write every value into the query as a constant, strings in single quotes. Use outlet names exactly as listed; if you are unsure of the exact name, use LIKE with % (outlet LIKE '%Fox%').
+  4. Rankings need ORDER BY. "Top N" or "which one" questions need LIMIT N (LIMIT 1 for "which one"). Never use a LIMIT above [max_rows].
+  5. Round averages and percentages to 2 decimals with ROUND().
+  6. Return only the columns that answer the question: the label column(s) and the number(s).
+  7. Set "answerable" to false, "sql" to an empty string, and say why in "explanation" when the question is not about this data, asks to change or delete anything, asks for anything the views do not have (people, users, e-mail addresses, passwords, article text, database or system tables), or cannot be answered with these views.
+
+  Examples:
+  Q: How many stories were published yesterday?
+  {"answerable": true, "sql": "SELECT COUNT(*) AS stories FROM ask_stories WHERE day = CURDATE() - INTERVAL 1 DAY", "explanation": "Counts stories whose local publication date is yesterday.", "chart_hint": "number"}
+  Q: Which five outlets ran the most opinion pieces in the last 30 days?
+  {"answerable": true, "sql": "SELECT outlet, COUNT(*) AS opinion_pieces FROM ask_sources WHERE is_opinion = 1 AND day > CURDATE() - INTERVAL 30 DAY GROUP BY outlet ORDER BY opinion_pieces DESC LIMIT 5", "explanation": "Counts opinion pieces per outlet over the last 30 days and keeps the top five.", "chart_hint": "bar"}
+  Q: What share of the perspectives on climate stories leaned right?
+  {"answerable": true, "sql": "SELECT ROUND(100 * SUM(bucket IN ('lean_right', 'right')) / COUNT(*), 2) AS right_share_pct FROM ask_sources WHERE is_perspective = 1 AND topic = 'climate'", "explanation": "Share of climate perspectives in the Lean Right or Right buckets.", "chart_hint": "number"}
+  Q: For each outlet, how does the average score of its news articles compare with its published rating?
+  {"answerable": true, "sql": "SELECT s.outlet, ROUND(AVG(s.score), 2) AS avg_score, o.prior_score FROM ask_sources AS s JOIN ask_outlets AS o ON o.outlet = s.outlet AND o.section = s.section WHERE s.is_perspective = 1 GROUP BY s.outlet, o.prior_score ORDER BY s.outlet", "explanation": "Average article score per outlet next to the outlet's published rating.", "chart_hint": "table"}
+  Q: Which story this week was covered by the most different outlets?
+  {"answerable": true, "sql": "SELECT title, outlet_count FROM ask_stories WHERE day >= CURDATE() - INTERVAL WEEKDAY(CURDATE()) DAY ORDER BY outlet_count DESC LIMIT 1", "explanation": "The story since Monday with the most distinct outlets among its perspectives.", "chart_hint": "table"}
+  Q: Delete every story from Fox News.
+  {"answerable": false, "sql": "", "explanation": "This page can only read data; it cannot change or delete anything.", "chart_hint": "table"}
+
+  Question: [question]
+rubric_version: ''
+blind: false
+anchors: {  }

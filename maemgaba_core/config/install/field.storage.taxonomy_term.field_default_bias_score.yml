@@ -1,0 +1,19 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - taxonomy
+id: taxonomy_term.field_default_bias_score
+field_name: field_default_bias_score
+entity_type: taxonomy_term
+type: integer
+settings:
+  unsigned: false
+  size: tiny
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

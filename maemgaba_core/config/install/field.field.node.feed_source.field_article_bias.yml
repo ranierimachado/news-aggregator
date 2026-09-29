@@ -1,0 +1,20 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_article_bias
+    - node.type.feed_source
+  module:
+    - options
+id: node.feed_source.field_article_bias
+field_name: field_article_bias
+entity_type: node
+bundle: feed_source
+label: 'Declared editorial bias (legacy)'
+description: 'Legacy, derived from the declared bias score on save. Removed next release.'
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_string

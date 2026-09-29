@@ -1,0 +1,25 @@
+output_language: English
+prompt_fragments:
+  candidate_line: 'ID: [id] | Title: [title]'
+  candidate_similarity: ' | Similarity: [similarity]'
+  no_candidates: '(no candidate events)'
+  no_summary: '(no summary)'
+  unknown_source: 'Unknown source'
+  unscored_bias: Unscored
+  full_text_notice: 'FULL TEXT: the article body below is complete.'
+  partial_text_notice: 'PARTIAL TEXT: only the headline and the feed abstract are available (the body is paywalled or could not be extracted). Classify from them, keep bias_confidence at or below [max_confidence], and set partial_text to true.'
+# A site that had other public URLs lists them here; Drupal then emits the
+# alias everywhere while the English route keeps answering. The sample keeps
+# one alias to show the shape.
+route_aliases:
+  -
+    route: maemgaba_core.sources
+    alias: /outlets
+search_examples:
+  - 'harbor dredging bill'
+  - 'who pays for the transit levy?'
+  - 'court ruling on the data privacy act'
+initials_stopwords:
+  - of
+  - the
+  - and

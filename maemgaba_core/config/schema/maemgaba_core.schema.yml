@@ -1,0 +1,653 @@
+maemgaba_core.settings:
+  type: config_object
+  label: 'News engine core settings'
+  mapping:
+    events_index:
+      type: string
+      label: 'Id of the Search API index of events (MariaDB vector backend) used by /search and vector clustering'
+    clustering_retrieval:
+      type: string
+      label: 'Clustering candidate-event retrieval strategy (recency or vector)'
+    clustering_max_distance:
+      type: float
+      label: 'Vector clustering: cosine-distance ceiling for a candidate event (lower = more similar; unset = 0.35)'
+    search_public:
+      type: boolean
+      label: 'Semantic search (/search) is open to anonymous visitors, behind the per-IP flood limit. Unset/false = evaluator-trial gate (SearchAccessCheck).'
+    search_flood:
+      type: mapping
+      label: 'Per-IP flood limit on /search queries (each uncached query costs one embedding call)'
+      mapping:
+        limit:
+          type: integer
+          label: 'Queries allowed per window (unset = 30)'
+        window:
+          type: integer
+          label: 'Window in seconds (unset = 600)'
+    explore:
+      type: mapping
+      label: 'Hybrid Solr search (/explore): query-time settings for indexes with the search_api_solr_dense_vector processor'
+      mapping:
+        index:
+          type: string
+          label: 'Search API index measured by maemgaba:search-eval --engine=solr (unset = solr_events)'
+        default_mode:
+          type: string
+          label: 'Mode when the request has no ?mode= (keyword, vector or hybrid; unset = hybrid)'
+        vector_weight:
+          type: float
+          label: 'Hybrid: multiplier on the vector similarity added to the keyword score (unset = 10)'
+        min_similarity:
+          type: float
+          label: 'Vector and hybrid: minimum Solr vector similarity, (1 + cosine) / 2 (unset = 0.8, the same as distance 0.4 on /search)'
+    ask:
+      type: mapping
+      label: '"Ask the data" (/ask): natural-language questions answered by SQL over the read-only ask_* views'
+      mapping:
+        enabled:
+          type: boolean
+          label: 'The /ask page, its menu link, its views deploy hook and its preflight checks are on (unset = off; the route answers 404)'
+        flood:
+          type: mapping
+          label: 'Per-IP limit on uncached questions (each costs up to two AI calls)'
+          mapping:
+            limit:
+              type: integer
+              label: 'Questions allowed per window (unset = 20)'
+            window:
+              type: integer
+              label: 'Window in seconds (unset = 3600)'
+        cache_ttl:
+          type: integer
+          label: 'Seconds an identical question is answered from cache (unset = 600)'
+        max_rows:
+          type: integer
+          label: 'Row cap: LIMIT added when missing, highest LIMIT accepted, rows fetched (unset = 200)'
+        statement_timeout:
+          type: integer
+          label: 'Seconds a SELECT may run (MariaDB max_statement_time; unset = 5)'
+        max_question_length:
+          type: integer
+          label: 'Longest question accepted, characters (unset = 300)'
+        answer_rows:
+          type: integer
+          label: 'Rows passed to the answer sentence step (unset = 50)'
+        examples:
+          type: sequence
+          label: 'Example questions shown as buttons'
+          sequence:
+            type: label
+            label: 'Example question'
+    search_max_distance:
+      type: float
+      label: 'Semantic search: cosine-distance ceiling for a result to be shown (unset = 0.32)'
+    review_since:
+      type: integer
+      label: 'Unix timestamp cutoff for the second-layer review (maemgaba:review-cards): only cards created on/after this time are eligible. 0 = no cutoff, review the full backlog.'
+    pipeline_uid:
+      type: integer
+      label: 'User id that owns nodes created by the pipeline (events, cards, inbound_queue). 0 = unset: falls back to uid 1 with a logged warning. Environment-specific (config_ignore).'
+    consensus_mode:
+      type: string
+      label: 'When first consensus synthesis runs: lazy_top5 = on visitor request, home top-5 events only; eager = at ingest, once an event has cards from 2 distinct outlets'
+      constraints:
+        Choice:
+          - lazy_top5
+          - eager
+    operation_models:
+      type: sequence
+      label: 'Per-operation AI provider/model overrides (keyed by prompt operation; empty = ai.settings default)'
+      sequence:
+        type: mapping
+        label: 'Provider/model override'
+        mapping:
+          provider:
+            type: string
+            label: 'AI provider plugin id (e.g. ollama, gemini, anthropic)'
+          model:
+            type: string
+            label: 'Model id as the provider expects it'
+    golden_set_path:
+      type: string
+      label: 'Golden-set JSON for maemgaba:eval / golden-export: absolute, or relative to the project root, then to the maemgaba_core module directory (site data; empty = the shipped sample pack)'
+    balance_levels:
+      type: sequence
+      label: 'Event balance labels: the first level (highest min first) whose min the 0-100 balance score reaches'
+      sequence:
+        type: mapping
+        label: 'Balance level'
+        mapping:
+          min:
+            type: integer
+            label: 'Minimum balance score'
+          label:
+            type: label
+            label: 'Label shown for this level'
+    divergence_levels:
+      type: sequence
+      label: 'Outlet editorial-divergence levels: the first level (highest min first) whose min the off-line percentage reaches'
+      sequence:
+        type: mapping
+        label: 'Divergence level'
+        mapping:
+          key:
+            type: string
+            label: 'Machine key (CSS class suffix)'
+          min:
+            type: integer
+            label: 'Minimum divergence percentage'
+          label:
+            type: label
+            label: 'Label shown for this level'
+    http_user_agent:
+      type: string
+      label: 'User-Agent sent when fetching feeds and articles (empty = legacy browser string). Identify the site, e.g. "ExampleNews/1.0 (+https://…/methodology)".'
+    respect_robots_txt:
+      type: boolean
+      label: 'Check robots.txt before fetching an article page; a disallowed page is classified from its feed headline and abstract only'
+    partial_text:
+      type: mapping
+      label: 'Partial-text (paywall) handling'
+      mapping:
+        min_words:
+          type: integer
+          label: 'Body shorter than this many words = partial text: only headline + feed abstract go to the model. 0 = off.'
+        max_confidence:
+          type: float
+          label: 'Cap on bias_confidence for partial-text articles (0..1)'
+    evidence_max_words:
+      type: integer
+      label: 'Cap on words per bias evidence quote (0 = no cap)'
+    framing_line_max_words:
+      type: integer
+      label: 'Cap on words in the per-source framing line (0 = no cap)'
+    blind_aliases:
+      type: sequence
+      label: 'Extra identity terms per outlet, redacted from the inputs of blind prompts'
+      sequence:
+        type: mapping
+        label: 'Outlet aliases'
+        mapping:
+          outlet:
+            type: string
+            label: 'Outlet name as in the feed registry'
+          terms:
+            type: sequence
+            label: 'Nicknames, sub-brands, bylines'
+            sequence:
+              type: string
+              label: 'Term'
+    overlap_guard:
+      type: mapping
+      label: 'Verbatim-overlap guard on AI output shown to readers'
+      mapping:
+        enabled:
+          type: boolean
+          label: 'Reject synthesis (and blank framing lines/new-event summaries) that copy a run of words from a source article; also keeps article text privately for the check'
+        ngram:
+          type: integer
+          label: 'Run length in words that counts as copying'
+        retention_days:
+          type: integer
+          label: 'Days to keep private source text for the check (0 = keep)'
+    synthesis_neutral_summary:
+      type: boolean
+      label: 'Consensus synthesis also rewrites the event neutral summary from all sources'
+    neutral_summary_max_words:
+      type: integer
+      label: 'Cap on words in an event neutral summary (0 = no cap)'
+    syndication:
+      type: mapping
+      label: 'Syndication (reprint) detection at ingest'
+      mapping:
+        enabled:
+          type: boolean
+          label: 'Detect reprints before classification; a reprint reuses the original card''s classification and is not counted as a perspective'
+        threshold:
+          type: float
+          label: 'Estimated Jaccard similarity of 5-word shingles that counts as a reprint (default 0.8)'
+        containment_threshold:
+          type: float
+          label: 'Share of the shorter text found in the longer that counts as a (trimmed) reprint (default 0.85)'
+        byline_threshold:
+          type: float
+          label: 'Both thresholds when both articles carry the same wire byline (default 0.5)'
+        lookback_hours:
+          type: integer
+          label: 'Compare with cards fingerprinted in the last N hours (default 48)'
+        min_words:
+          type: integer
+          label: 'Texts shorter than this are never compared (default 80)'
+        wires:
+          type: sequence
+          label: 'Wire services and the byline strings that identify their copy'
+          sequence:
+            type: mapping
+            label: 'Wire service'
+            mapping:
+              name:
+                type: label
+                label: 'Name shown in the "via" tag'
+              patterns:
+                type: sequence
+                label: 'Case-insensitive strings looked for in the first and last 60 words'
+                sequence:
+                  type: string
+                  label: 'Pattern'
+    click_log:
+      type: mapping
+      label: 'Outbound click-through logging'
+      mapping:
+        enabled:
+          type: boolean
+          label: 'Send outbound links through /out/{card} and count event-page views (no IP, no cookie)'
+        report_days:
+          type: integer
+          label: 'Days covered by the methodology-page aggregate (default 30)'
+    card_display:
+      type: mapping
+      label: 'What the event page shows per article (display policy)'
+      mapping:
+        micro_summary:
+          type: boolean
+          label: 'Show the per-article AI micro-summary (unset = shown; a site with an excerpt/summary ban sets false)'
+        framing_line:
+          type: boolean
+          label: 'Show the one-sentence framing paraphrase (unset = hidden)'
+    ai_label:
+      type: label
+      label: 'Label under the AI-generated synthesis on event pages; @version = rubric version (empty = no label)'
+    story_divergence:
+      type: mapping
+      label: 'Per-article divergence from the outlet''s published prior'
+      mapping:
+        min_delta:
+          type: integer
+          label: 'Smallest |score - prior| that is shown (default 1); the two must also fall in different buckets'
+        label:
+          type: label
+          label: 'Sentence shown, with @usual and @story bucket labels (empty = "Usually leans @usual, this story reads @story")'
+
+maemgaba_core.rubric:
+  type: config_object
+  label: 'Bias rubric (versioned; rendered into prompts through the [rubric] token)'
+  mapping:
+    rubric_version:
+      type: string
+      label: 'Version, e.g. 1.0'
+    rubric_date:
+      type: string
+      label: 'Date this version was adopted (Y-m-d)'
+    summary:
+      type: text
+      label: 'What the score measures'
+    center_definition:
+      type: text
+      label: 'Definition of Center (score 0)'
+    scale:
+      type: sequence
+      label: 'Bucket definitions'
+      sequence:
+        type: mapping
+        label: 'Score'
+        mapping:
+          score:
+            type: integer
+            label: 'Score'
+          label:
+            type: label
+            label: 'Label'
+          definition:
+            type: text
+            label: 'Definition'
+    framing_signals:
+      type: sequence
+      label: 'Framing signals (topic-independent)'
+      sequence:
+        type: mapping
+        label: 'Signal'
+        mapping:
+          key:
+            type: string
+            label: 'Key'
+          label:
+            type: label
+            label: 'Label'
+          description:
+            type: text
+            label: 'Description'
+    issues:
+      type: sequence
+      label: 'Per-issue marker table'
+      sequence:
+        type: mapping
+        label: 'Issue'
+        mapping:
+          key:
+            type: string
+            label: 'Key'
+          label:
+            type: label
+            label: 'Label'
+          left_tells:
+            type: sequence
+            label: 'Left tells'
+            sequence:
+              type: string
+              label: 'Tell'
+          right_tells:
+            type: sequence
+            label: 'Right tells'
+            sequence:
+              type: string
+              label: 'Tell'
+          notes:
+            type: text
+            label: 'Notes'
+    rules:
+      type: text
+      label: 'Decision rules'
+
+maemgaba_core.spectrum:
+  type: config_object
+  label: 'Bias spectrum display buckets'
+  mapping:
+    buckets:
+      type: sequence
+      label: 'Ordered buckets (left to right). Together they must cover every score from -2 to +2 exactly once.'
+      sequence:
+        type: mapping
+        label: 'Bucket'
+        mapping:
+          key:
+            type: string
+            label: 'Machine key (stable; used in CSS classes and data)'
+          label:
+            type: label
+            label: 'Label'
+          short_label:
+            type: label
+            label: 'Short label (compact counts)'
+          min_score:
+            type: integer
+            label: 'Lowest score in this bucket'
+            constraints:
+              Range:
+                min: -2
+                max: 2
+          max_score:
+            type: integer
+            label: 'Highest score in this bucket'
+            constraints:
+              Range:
+                min: -2
+                max: 2
+          color:
+            type: color_hex
+            label: 'Bucket color'
+
+block.settings.maemgaba_ad_slot:
+  type: block_settings
+  label: 'Ad slot block'
+  mapping:
+    ad_label:
+      type: label
+      label: 'Slot label'
+    ad_size:
+      type: label
+      label: 'Slot size'
+
+maemgaba_core.maemgaba_prompt.*:
+  type: config_entity
+  label: 'AI prompt'
+  mapping:
+    id:
+      type: string
+      label: 'Machine name'
+    label:
+      type: label
+      label: 'Label'
+    description:
+      type: text
+      label: 'Description'
+    operation:
+      type: string
+      label: 'Operation'
+    system_prompt:
+      type: text
+      label: 'System prompt'
+    template:
+      type: text
+      label: 'Prompt template'
+    rubric_version:
+      type: string
+      label: 'Rubric version this prompt was written and calibrated for (maemgaba_core.rubric)'
+    blind:
+      type: boolean
+      label: 'Blind classification: strip the outlet identity from the inputs'
+    anchors:
+      type: sequence
+      label: 'Few-shot anchor examples (paraphrased; outlet/url are provenance, never sent to the model)'
+      sequence:
+        type: mapping
+        label: 'Anchor'
+        mapping:
+          score:
+            type: integer
+            label: 'Score (-2..+2)'
+          outlet:
+            type: string
+            label: 'Outlet (provenance only)'
+          url:
+            type: uri
+            label: 'Article URL (provenance only)'
+          fetched:
+            type: string
+            label: 'Date the article was read (Y-m-d)'
+          description:
+            type: text
+            label: 'Paraphrased description of the framing'
+          quote:
+            type: string
+            label: 'One short quote (15 words max)'
+
+maemgaba_core.topics:
+  type: config_object
+  label: 'Topic vocabulary (field_topic allowed values, AI prompt/schema enum)'
+  mapping:
+    topics:
+      type: sequence
+      label: 'Topics in display order'
+      sequence:
+        type: mapping
+        label: 'Topic'
+        mapping:
+          key:
+            type: string
+            label: 'Machine key (stored in field_topic; never rename one in use)'
+          label:
+            type: label
+            label: 'Label'
+    fallback:
+      type: string
+      label: 'Key stored when the model returns an unknown topic'
+
+maemgaba_core.locale:
+  type: config_object
+  label: 'Locale pack: language-specific text the engine splices into prompts and pages'
+  mapping:
+    output_language:
+      type: label
+      label: 'Language the AI writes reader-facing text in (fills the [output_language] prompt token)'
+    prompt_fragments:
+      type: mapping
+      label: 'Fragments assembled in code and inserted into prompt tokens'
+      mapping:
+        candidate_line:
+          type: text
+          label: 'One candidate event in [existing_events]; tokens [id], [title]'
+        candidate_similarity:
+          type: text
+          label: 'Appended to a candidate line when vector similarity is known; token [similarity]'
+        no_candidates:
+          type: text
+          label: '[existing_events] when there are no candidates'
+        no_summary:
+          type: text
+          label: '[neutral_summary] when the event has none'
+        unknown_source:
+          type: text
+          label: 'Outlet name in [perspectives] when a card has no source'
+        unscored_bias:
+          type: text
+          label: 'Bucket label in [perspectives] when a card has no score'
+        full_text_notice:
+          type: text
+          label: '[text_status] when the full article body is available'
+        partial_text_notice:
+          type: text
+          label: '[text_status] when only the headline and feed abstract are available (paywall, robots.txt, extraction failure); token [max_confidence]'
+    route_aliases:
+      type: sequence
+      label: 'Path alias per engine route; keeps a site''s existing public URLs'
+      sequence:
+        type: mapping
+        label: 'Route alias'
+        mapping:
+          route:
+            type: string
+            label: 'Route name (e.g. maemgaba_core.sources)'
+          alias:
+            type: path
+            label: 'Alias (e.g. /fontes)'
+    search_examples:
+      type: sequence
+      label: 'Example queries shown on the empty search page'
+      sequence:
+        type: label
+        label: 'Query'
+    initials_stopwords:
+      type: sequence
+      label: 'Lowercase words skipped when building outlet avatar initials'
+      sequence:
+        type: string
+        label: 'Word'
+
+maemgaba_core.methodology:
+  type: config_object
+  label: 'Methodology page copy (site content; bodies are trusted editorial HTML with [site_name], [route:*], [rubric:*], [cards:*] and [clicks:*] tokens)'
+  mapping:
+    title:
+      type: label
+      label: 'Title'
+    lede:
+      type: text
+      label: 'Lede (HTML)'
+    pipeline_label:
+      type: label
+      label: 'Pipeline strip label'
+    steps:
+      type: sequence
+      label: 'Pipeline steps'
+      sequence:
+        type: mapping
+        label: 'Step'
+        mapping:
+          icon:
+            type: string
+            label: 'Icon (dots, feed, spectrum, event, bars, consensus)'
+          title:
+            type: label
+            label: 'Title'
+          description:
+            type: label
+            label: 'Description'
+    nav_label:
+      type: label
+      label: 'Section navigation label'
+    sections:
+      type: sequence
+      label: 'Sections'
+      sequence:
+        type: mapping
+        label: 'Section'
+        mapping:
+          id:
+            type: string
+            label: 'Anchor id'
+          title:
+            type: label
+            label: 'Title'
+          nav_title:
+            type: label
+            label: 'Short title for the navigation (empty = title)'
+          modifier:
+            type: string
+            label: 'CSS modifier'
+          body:
+            type: text
+            label: 'Body (HTML)'
+          contributors:
+            type: mapping
+            label: 'Contributors list (accepted correction suggestions)'
+            mapping:
+              intro:
+                type: text
+                label: 'Intro (HTML)'
+              empty:
+                type: text
+                label: 'Text when there are none (HTML)'
+          body_after:
+            type: text
+            label: 'Body after the contributors list (HTML)'
+    revision:
+      type: label
+      label: 'Revision line'
+
+plugin.plugin_configuration.facets_processor.maemgaba_numeric_value_widget_order:
+  type: mapping
+  label: 'Numeric raw value widget order'
+  mapping:
+    sort:
+      type: string
+      label: 'Sort order (ASC or DESC)'
+
+maemgaba_core.ask_schema:
+  type: config_object
+  label: '"Ask the data": descriptions of the ask_* views and columns, rendered into the ask_sql prompt as [ask_schema]'
+  mapping:
+    views:
+      type: sequence
+      label: 'Views (the view and column names come from AskSchema; only descriptions live here)'
+      sequence:
+        type: mapping
+        label: 'View'
+        mapping:
+          name:
+            type: string
+            label: 'View name'
+          description:
+            type: label
+            label: 'What one row is'
+          columns:
+            type: sequence
+            label: 'Columns'
+            sequence:
+              type: mapping
+              label: 'Column'
+              mapping:
+                name:
+                  type: string
+                  label: 'Column name'
+                description:
+                  type: label
+                  label: 'Description'
+    bucket_column:
+      type: label
+      label: 'Description of each per-bucket count column; @label is the bucket label'
+    notes:
+      type: sequence
+      label: 'Extra rules listed after the views'
+      sequence:
+        type: label
+        label: 'Note'

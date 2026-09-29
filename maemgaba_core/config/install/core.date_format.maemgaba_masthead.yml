@@ -1,0 +1,7 @@
+langcode: en
+status: true
+dependencies: {  }
+id: maemgaba_masthead
+label: 'News engine: masthead (weekday and date)'
+locked: false
+pattern: 'l · F j, Y'

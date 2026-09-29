@@ -1,0 +1,22 @@
+buckets:
+  -
+    key: left
+    label: Left
+    short_label: L
+    min_score: -2
+    max_score: -1
+    color: '#1d5fa8'
+  -
+    key: center
+    label: Center
+    short_label: C
+    min_score: 0
+    max_score: 0
+    color: '#9b9797'
+  -
+    key: right
+    label: Right
+    short_label: R
+    min_score: 1
+    max_score: 2
+    color: '#ec3013'

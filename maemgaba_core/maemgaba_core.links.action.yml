@@ -1,0 +1,5 @@
+maemgaba_core.ai_prompt_add:
+  route_name: entity.maemgaba_prompt.add_form
+  title: 'Add AI prompt'
+  appears_on:
+    - entity.maemgaba_prompt.collection

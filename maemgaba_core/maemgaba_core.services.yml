@@ -1,0 +1,205 @@
+# web/modules/custom/maemgaba_core/maemgaba_core.services.yml
+services:
+  maemgaba_core.ai_call_logger:
+    class: Drupal\maemgaba_core\Service\AiCallLogger
+    arguments: ['@database', '@datetime.time']
+
+  maemgaba_core.ai_analyzer:
+    class: Drupal\maemgaba_core\AiAnalyzerService
+    arguments: ['@ai.provider', '@entity_type.manager', '@logger.factory', '@maemgaba_core.ai_call_logger', '@config.factory', '@maemgaba_core.topics', '@maemgaba_core.spectrum', '@maemgaba_core.rubric', '@maemgaba_core.outlet_redactor', '@maemgaba_core.overlap_guard']
+
+  maemgaba_core.rubric:
+    class: Drupal\maemgaba_core\Service\RubricService
+    arguments: ['@config.factory']
+
+  maemgaba_core.outlet_redactor:
+    class: Drupal\maemgaba_core\Service\OutletRedactor
+    arguments: ['@entity_type.manager', '@config.factory']
+
+  maemgaba_core.overlap_guard:
+    class: Drupal\maemgaba_core\Service\VerbatimOverlapGuard
+    arguments: ['@config.factory']
+
+  maemgaba_core.source_text_store:
+    class: Drupal\maemgaba_core\Service\SourceTextStore
+    arguments: ['@database', '@datetime.time']
+
+  maemgaba_core.robots_txt:
+    class: Drupal\maemgaba_core\Service\RobotsTxtPolicy
+    arguments: ['@http_client', '@cache.default', '@config.factory', '@logger.factory']
+
+  maemgaba_core.ingestion_engine:
+    class: Drupal\maemgaba_core\Service\IngestionEngine
+    arguments: ['@http_client', '@entity_type.manager', '@logger.factory', '@maemgaba_core.pipeline_identity', '@config.factory', '@maemgaba_core.robots_txt']
+
+  maemgaba_core.pipeline_identity:
+    class: Drupal\maemgaba_core\Service\PipelineIdentity
+    arguments: ['@config.factory', '@entity_type.manager', '@logger.factory']
+
+  maemgaba_core.event_relevance:
+    class: Drupal\maemgaba_core\Service\EventRelevanceService
+    arguments: ['@entity_type.manager']
+
+  maemgaba_core.event_ranking:
+    class: Drupal\maemgaba_core\Service\EventRankingService
+    arguments: ['@database', '@datetime.time']
+
+  maemgaba_core.spectrum:
+    class: Drupal\maemgaba_core\Service\SpectrumService
+    arguments: ['@config.factory']
+
+  maemgaba_core.route_alias_sync:
+    class: Drupal\maemgaba_core\Service\RouteAliasSync
+    arguments: ['@config.factory', '@entity_type.manager']
+
+  maemgaba_core.relative_time:
+    class: Drupal\maemgaba_core\Service\RelativeTime
+    arguments: ['@datetime.time', '@string_translation']
+
+  maemgaba_core.topics:
+    class: Drupal\maemgaba_core\Service\TopicService
+    arguments: ['@config.factory']
+
+  maemgaba_core.event_preprocessor:
+    class: Drupal\maemgaba_core\Service\EventPreprocessor
+    arguments: ['@entity_type.manager', '@maemgaba_core.spectrum', '@maemgaba_core.topics', '@maemgaba_core.relative_time', '@maemgaba_core.event_ranking', '@date.formatter', '@datetime.time', '@maemgaba_core.story_divergence', '@maemgaba_core.click_log', '@maemgaba_core.syndication', '@config.factory', '@maemgaba_core.rubric']
+
+  maemgaba_core.source_bias_stats:
+    class: Drupal\maemgaba_core\Service\SourceBiasStats
+    arguments: ['@database', '@maemgaba_core.spectrum']
+
+  maemgaba_core.consensus:
+    class: Drupal\maemgaba_core\Service\ConsensusService
+    arguments: ['@entity_type.manager', '@maemgaba_core.ai_analyzer', '@logger.factory', '@maemgaba_core.spectrum', '@config.factory', '@maemgaba_core.overlap_guard', '@maemgaba_core.source_text_store']
+
+  maemgaba_core.semantic_search_logger:
+    class: Drupal\maemgaba_core\Service\SemanticSearchLogger
+    arguments: ['@database', '@datetime.time', '@current_user']
+
+  maemgaba_core.event_candidates:
+    class: Drupal\maemgaba_core\Service\EventCandidateFinder
+    arguments: ['@entity_type.manager', '@ai.provider', '@logger.factory', '@maemgaba_core.ai_call_logger', '@config.factory']
+
+  maemgaba_core.event_search:
+    class: Drupal\maemgaba_core\Service\EventSearch
+    arguments: ['@entity_type.manager', '@config.factory', '@database']
+
+  maemgaba_core.query_embedder:
+    class: Drupal\maemgaba_core\Service\QueryEmbedder
+    arguments: ['@ai.provider', '@cache.default', '@flood', '@current_user', '@config.factory', '@logger.factory']
+
+  maemgaba_core.solr_event_search:
+    class: Drupal\maemgaba_core\Service\SolrEventSearch
+    arguments: ['@entity_type.manager', '@config.factory', '@?plugin.manager.search_api.parse_mode']
+
+  maemgaba_core.solr_hybrid_query:
+    class: Drupal\maemgaba_core\EventSubscriber\SolrHybridQuerySubscriber
+    arguments: ['@maemgaba_core.query_embedder', '@config.factory', '@request_stack', '@messenger', '@page_cache_kill_switch', '@logger.factory']
+    tags:
+      - { name: event_subscriber }
+
+  maemgaba_core.embedding_dimensions:
+    class: Drupal\maemgaba_core\EventSubscriber\EmbeddingDimensionSubscriber
+    arguments: ['@entity_type.manager', '@logger.factory']
+    tags:
+      - { name: event_subscriber }
+
+  maemgaba_core.queue_processor:
+    class: Drupal\maemgaba_core\Service\QueueProcessor
+    arguments: ['@entity_type.manager', '@maemgaba_core.ai_analyzer', '@maemgaba_core.event_relevance', '@maemgaba_core.consensus', '@logger.factory', '@maemgaba_core.event_candidates', '@config.factory', '@maemgaba_core.pipeline_identity', '@lock', '@maemgaba_core.topics', '@maemgaba_core.source_text_store', '@maemgaba_core.overlap_guard', '@maemgaba_core.syndication']
+
+  maemgaba_core.syndication:
+    class: Drupal\maemgaba_core\Service\SyndicationDetector
+    arguments: ['@database', '@entity_type.manager', '@config.factory', '@datetime.time']
+
+  maemgaba_core.story_divergence:
+    class: Drupal\maemgaba_core\Service\StoryDivergence
+    arguments: ['@entity_type.manager', '@maemgaba_core.spectrum', '@config.factory']
+
+  maemgaba_core.click_log:
+    class: Drupal\maemgaba_core\Service\ClickLog
+    arguments: ['@database', '@datetime.time', '@config.factory', '@maemgaba_core.spectrum']
+
+  maemgaba_core.stats:
+    class: Drupal\maemgaba_core\Service\StatsService
+    arguments: ['@database', '@entity_type.manager', '@config.factory']
+
+  maemgaba_core.ai_pricing:
+    class: Drupal\maemgaba_core\Service\AiPricing
+
+  maemgaba_core.golden_set_exporter:
+    class: Drupal\maemgaba_core\Service\GoldenSetExporter
+    arguments: ['@entity_type.manager', '@extension.list.module', '@config.factory', '%app.root%']
+
+  maemgaba_core.eval_runner:
+    class: Drupal\maemgaba_core\Service\EvalRunner
+    arguments: ['@maemgaba_core.ai_analyzer', '@entity_type.manager', '@database', '@maemgaba_core.golden_set_exporter', '@maemgaba_core.ai_pricing', '@datetime.time']
+
+  maemgaba_core.suggestion_manager:
+    class: Drupal\maemgaba_core\Service\SuggestionManager
+    arguments: ['@database', '@datetime.time', '@entity_type.manager', '@plugin.manager.mail', '@cache_tags.invalidator']
+
+  maemgaba_core.search_access_checker:
+    class: Drupal\maemgaba_core\Access\SearchAccessCheck
+    arguments: ['@entity_type.manager', '@datetime.time', '@config.factory']
+    tags:
+      - { name: access_check, applies_to: _maemgaba_search_access }
+
+  maemgaba_core.feed_seeder:
+    class: Drupal\maemgaba_core\Service\FeedSeeder
+    arguments: ['@entity_type.manager', '@maemgaba_core.pipeline_identity']
+
+  maemgaba_core.locale_commands:
+    class: Drupal\maemgaba_core\Drush\Commands\MaemgabaLocaleCommands
+    arguments: ['@language_manager', '@module_handler', '@theme_handler', '@maemgaba_core.route_alias_sync']
+    tags:
+      - { name: drush.command }
+
+  maemgaba_core.harvest_commands:
+    class: Drupal\maemgaba_core\Drush\Commands\MaemgabaHarvestCommands
+    arguments: ['@maemgaba_core.ingestion_engine', '@maemgaba_core.feed_seeder']
+    tags:
+      - { name: drush.command }
+
+  maemgaba_core.process_commands:
+    class: Drupal\maemgaba_core\Drush\Commands\MaemgabaProcessCommands
+    arguments: ['@maemgaba_core.queue_processor', '@maemgaba_core.event_relevance', '@maemgaba_core.consensus', '@maemgaba_core.stats', '@config.factory']
+    tags:
+      - { name: drush.command }
+
+  maemgaba_core.stats_commands:
+    class: Drupal\maemgaba_core\Drush\Commands\MaemgabaStatsCommands
+    arguments: ['@maemgaba_core.stats', '@date.formatter']
+    tags:
+      - { name: drush.command }
+
+  maemgaba_core.calibration_runner:
+    class: Drupal\maemgaba_core\Calibration\CalibrationRunner
+    arguments: ['@maemgaba_core.ingestion_engine', '@maemgaba_core.ai_analyzer', '@entity_type.manager', '@maemgaba_core.spectrum', '@maemgaba_core.rubric', '@database', '@datetime.time', '@maemgaba_core.ai_pricing', '@file_system', '@stream_wrapper_manager']
+
+  maemgaba_core.eval_commands:
+    class: Drupal\maemgaba_core\Drush\Commands\MaemgabaEvalCommands
+    arguments: ['@maemgaba_core.golden_set_exporter', '@maemgaba_core.eval_runner']
+    tags:
+      - { name: drush.command }
+
+  # "Ask the data" (/ask): natural-language questions over the ask_* views.
+  maemgaba_core.ask_schema:
+    class: Drupal\maemgaba_core\Ask\AskSchema
+    arguments: ['@database', '@config.factory', '@maemgaba_core.spectrum']
+
+  maemgaba_core.ask_probe:
+    class: Drupal\maemgaba_core\Ask\ReadonlyProbe
+    arguments: ['@cache.default', '@datetime.time']
+
+  maemgaba_core.ask_executor:
+    class: Drupal\maemgaba_core\Ask\AskExecutor
+    arguments: ['@maemgaba_core.ask_probe', '@maemgaba_core.ask_schema']
+
+  maemgaba_core.ask_log:
+    class: Drupal\maemgaba_core\Ask\AskLog
+    arguments: ['@database', '@datetime.time']
+
+  maemgaba_core.ask:
+    class: Drupal\maemgaba_core\Ask\AskService
+    arguments: ['@config.factory', '@maemgaba_core.ai_analyzer', '@maemgaba_core.ask_schema', '@maemgaba_core.ask_probe', '@maemgaba_core.ask_executor', '@maemgaba_core.ask_log', '@cache.default', '@database', '@maemgaba_core.ai_pricing', '@datetime.time', '@maemgaba_core.spectrum']

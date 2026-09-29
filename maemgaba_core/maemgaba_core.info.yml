@@ -1,0 +1,16 @@
+name: 'News Engine core'
+type: module
+version: 1.0.0
+description: 'Multi-perspective news pipeline: RSS ingestion, AI bias and topic classification, story clustering into events, consensus synthesis, semantic search.'
+package: News Engine
+core_version_requirement: ^10 || ^11
+dependencies:
+  - drupal:node
+  - drupal:taxonomy
+  - drupal:options
+  - drupal:link
+  - drupal:text
+  - ai:ai
+  - key:key
+  - mcp:mcp
+  - search_api:search_api

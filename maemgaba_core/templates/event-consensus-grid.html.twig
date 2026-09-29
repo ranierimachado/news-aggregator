@@ -1,0 +1,38 @@
+{#
+/**
+ * @file
+ * Event consensus/dispute grid fragment.
+ *
+ * Shared between the full event page (rendered inline) and the on-demand
+ * synthesis endpoint (rendered standalone and injected via JS), so both
+ * always produce identical markup.
+ *
+ * Available variables:
+ * - common_points: list of plain-text points every outlet agrees on.
+ * - disputed_points: list of plain-text points outlets contest.
+ */
+#}
+<div class="consensus-grid">
+  <div class="consensus-col consensus-common">
+    <h2 class="consensus-title">{{ 'Common ground'|t|upper }}</h2>
+    <ul class="consensus-list">
+      {% for point in common_points %}
+        <li class="consensus-item consensus-item--common">
+          <span class="consensus-icon consensus-icon--check">&#10003;</span>
+          <span class="consensus-text">{{ point }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="consensus-col consensus-dispute">
+    <h2 class="consensus-title">{{ 'Disputed'|t|upper }}</h2>
+    <ul class="consensus-list">
+      {% for point in disputed_points %}
+        <li class="consensus-item consensus-item--dispute">
+          <span class="consensus-icon consensus-icon--arrows">&#8596;</span>
+          <span class="consensus-text">{{ point }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>

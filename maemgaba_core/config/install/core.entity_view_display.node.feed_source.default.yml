@@ -1,0 +1,41 @@
+langcode: pt-br
+status: true
+dependencies:
+  config:
+    - field.field.node.feed_source.field_active_testing
+    - field.field.node.feed_source.field_feed_url
+    - field.field.node.feed_source.field_media_outlet
+    - node.type.feed_source
+id: node.feed_source.default
+targetEntityType: node
+bundle: feed_source
+mode: default
+content:
+  field_media_outlet:
+    type: string
+    label: inline
+    weight: 0
+    region: content
+    settings:
+      link_to_entity: false
+    third_party_settings: {}
+  field_feed_url:
+    type: string
+    label: inline
+    weight: 1
+    region: content
+    settings:
+      link_to_entity: false
+    third_party_settings: {}
+  field_active_testing:
+    type: boolean
+    label: inline
+    weight: 2
+    region: content
+    settings:
+      format: default
+      format_custom_false: ''
+      format_custom_true: ''
+    third_party_settings: {}
+hidden:
+  links: true

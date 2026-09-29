@@ -1,0 +1,8 @@
+langcode: pt-br
+status: true
+name: Feed source
+type: feed_source
+description: 'News-outlet RSS feeds harvested automatically by the pipeline.'
+new_revision: true
+preview_mode: 1
+display_submitted: false

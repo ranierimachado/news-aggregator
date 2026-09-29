@@ -1,0 +1,119 @@
+{#
+/**
+ * @file
+ * Methodology page.
+ *
+ * The copy is site content from the maemgaba_core.methodology config object
+ * (see MethodologyController); this template only lays it out. Variables:
+ * - methodology: title, lede, pipeline_label, steps[{icon, title,
+ *   description}], nav_label, sections[{id, number, title, nav_title,
+ *   modifier, body, contributors{intro, empty}|null, body_after}], revision.
+ * - buckets: spectrum buckets (the dots/spectrum step icons render one
+ *   segment per bucket).
+ * - contributors: credit names of accepted correction suggestions.
+ * - click_stats: NULL, or when outbound clicks are logged {days, clicks,
+ *   views, impressions, ctr (percentage or NULL)} over the last days; the
+ *   copy can also use the [clicks:*] tokens (see MethodologyController).
+ *
+ * Provided by maemgaba_core; a theme overrides it by copying this file.
+ */
+#}
+<div class="methodology-page">
+
+  <div class="methodology-hero">
+    <h2 class="methodology-hero__title">{{ methodology.title }}</h2>
+    <p class="methodology-hero__lede">{{ methodology.lede }}</p>
+  </div>
+
+  {% if methodology.steps %}
+  <div class="methodology-pipeline">
+    <span class="methodology-pipeline__label">{{ methodology.pipeline_label }}</span>
+    <div class="methodology-pipeline__row">
+      {% for step in methodology.steps %}
+      <div class="methodology-step">
+        {% if step.icon == 'dots' %}
+        <div class="methodology-step__icon methodology-step__icon--dots">
+          {% for bucket in buckets %}
+          <span class="dot dot--{{ bucket.key }}" style="--bucket-color: var(--bucket-{{ bucket.key }}-color, {{ bucket.color }})"></span>
+          {% endfor %}
+        </div>
+        {% elseif step.icon == 'feed' %}
+        <div class="methodology-step__icon">
+          <svg width="52" height="28" viewBox="0 0 52 28" aria-hidden="true" focusable="false"><path d="M0 4 H36 M0 14 H36 M0 24 H36" stroke="currentColor" stroke-width="2" fill="none"/><path d="M36 4 L48 14 L36 24" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+        </div>
+        {% elseif step.icon == 'spectrum' %}
+        <div class="methodology-step__icon">
+          <div class="methodology-step__spectrum">
+            {% for bucket in buckets %}
+            <span class="methodology-step__spectrum-seg methodology-step__spectrum-seg--{{ bucket.key }}" style="--bucket-color: var(--bucket-{{ bucket.key }}-color, {{ bucket.color }})"></span>
+            {% endfor %}
+          </div>
+        </div>
+        {% elseif step.icon == 'event' %}
+        <div class="methodology-step__icon">
+          {# Three coverage lines converging on one event: the first, middle
+             and last bucket colours, whatever the site's bucket count. #}
+          {% set first = buckets|first %}
+          {% set middle = buckets[(buckets|length / 2)|round(0, 'floor')] %}
+          {% set last = buckets|last %}
+          <svg width="72" height="44" viewBox="0 0 72 44" aria-hidden="true" focusable="false"><path d="M0 6 C24 6 30 22 48 22" stroke="var(--bucket-{{ first.key }}-color, {{ first.color }})" stroke-width="3" fill="none"/><path d="M0 22 H48" stroke="var(--bucket-{{ middle.key }}-color, {{ middle.color }})" stroke-width="3" fill="none"/><path d="M0 38 C24 38 30 22 48 22" stroke="var(--bucket-{{ last.key }}-color, {{ last.color }})" stroke-width="3" fill="none"/><rect x="50" y="12" width="20" height="20" fill="currentColor"/></svg>
+        </div>
+        {% elseif step.icon == 'bars' %}
+        <div class="methodology-step__icon methodology-step__icon--bars">
+          <span class="methodology-step__bar" style="height: 44px;"></span>
+          <span class="methodology-step__bar methodology-step__bar--muted" style="height: 30px;"></span>
+          <span class="methodology-step__bar methodology-step__bar--faint" style="height: 18px;"></span>
+        </div>
+        {% elseif step.icon == 'consensus' %}
+        <div class="methodology-step__icon methodology-step__icon--consensus">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true" focusable="false"><path d="M20 6 9 17l-5-5"/></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent, currentColor)" stroke-width="2.5" aria-hidden="true" focusable="false"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </div>
+        {% endif %}
+        <span class="methodology-step__title">{{ step.title }}</span>
+        <span class="methodology-step__desc">{{ step.description }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="methodology-body">
+
+    <nav class="methodology-nav" aria-label="{{ methodology.nav_label }}">
+      {% for section in methodology.sections %}
+      <a href="#{{ section.id }}"><span class="methodology-nav__num">{{ section.number }}</span>{{ section.nav_title }}</a>
+      {% endfor %}
+    </nav>
+
+    <div class="methodology-sections">
+      {% for section in methodology.sections %}
+      <section id="{{ section.id }}" class="methodology-section{{ section.modifier ? ' methodology-section--' ~ section.modifier }}">
+        <div class="methodology-section__head">
+          <span class="methodology-section__num">{{ section.number }}</span>
+          <h3 class="methodology-section__title">{{ section.title }}</h3>
+        </div>
+        {{ section.body }}
+        {% if section.contributors %}
+          {% if contributors %}
+            <p>{{ section.contributors.intro }}</p>
+            <ul class="methodology-contributors">
+              {% for name in contributors %}
+                <li class="methodology-contributors__chip">{{ name }}</li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p>{{ section.contributors.empty }}</p>
+          {% endif %}
+        {% endif %}
+        {{ section.body_after }}
+      </section>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if methodology.revision %}
+  <p class="methodology-revision">{{ methodology.revision }}</p>
+  {% endif %}
+
+</div>

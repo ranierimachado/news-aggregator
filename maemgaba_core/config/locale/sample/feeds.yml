@@ -1,0 +1,61 @@
+# Sample outlet registry for the fictional country the sample pack describes.
+# Reference data, NOT loaded automatically. Every outlet and feed here is
+# invented (.example domains never resolve). Load with:
+#   drush maemgaba:seed-feeds web/modules/custom/news-aggregator/maemgaba_core/config/locale/sample/feeds.yml --dry-run
+#
+# score: the outlet's declared editorial line on the shared -2..+2 scale.
+# published_prior: the same figure as published by an independent rater,
+# kept apart so per-article scores can be compared against it later.
+# section: news or opinion (opinion is classified but never counted toward
+# balance).
+feeds:
+  - url: https://feeds.capitalledger.example/politics.xml
+    outlet: The Capital Ledger
+    score: 0
+    published_prior: 0
+    prior_source: https://ratings.example/outlets/capital-ledger
+    section: news
+    website: https://www.capitalledger.example
+  - url: https://feeds.harbortimes.example/rss/national
+    outlet: Harbor Times
+    score: -1
+    published_prior: -1
+    prior_source: https://ratings.example/outlets/harbor-times
+    section: news
+    website: https://www.harbortimes.example
+  - url: https://feeds.harbortimes.example/rss/opinion
+    outlet: Harbor Times
+    score: -1
+    published_prior: -1
+    prior_source: https://ratings.example/outlets/harbor-times
+    section: opinion
+    website: https://www.harbortimes.example
+  - url: https://www.redriverdispatch.example/feed
+    outlet: Red River Dispatch
+    score: -2
+    published_prior: -2
+    prior_source: https://ratings.example/outlets/red-river-dispatch
+    section: news
+    website: https://www.redriverdispatch.example
+  - url: https://feeds.northgatenews.example/latest.xml
+    outlet: Northgate News
+    score: 1
+    published_prior: 1
+    prior_source: https://ratings.example/outlets/northgate-news
+    section: news
+    website: https://www.northgatenews.example
+  - url: https://www.ironbridgereview.example/rss
+    outlet: Ironbridge Review
+    score: 2
+    published_prior: 2
+    prior_source: https://ratings.example/outlets/ironbridge-review
+    section: news
+    website: https://www.ironbridgereview.example
+  - url: https://wire.nationalpress.example/rss/top
+    outlet: National Press Wire
+    score: 0
+    published_prior: 0
+    prior_source: https://ratings.example/outlets/national-press-wire
+    section: news
+    website: https://www.nationalpress.example
+    partial_text: true

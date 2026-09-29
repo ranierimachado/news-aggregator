@@ -1,0 +1,60 @@
+langcode: pt-br
+status: true
+dependencies:
+  config:
+    - field.field.node.event.field_common_points
+    - field.field.node.event.field_disputed_points
+    - field.field.node.event.field_neutral_summary
+    - node.type.event
+  module:
+    - text
+id: node.event.default
+targetEntityType: node
+bundle: event
+mode: default
+content:
+  field_neutral_summary:
+    type: text_textarea
+    weight: 1
+    region: content
+    settings:
+      rows: 5
+      placeholder: ''
+    third_party_settings: {  }
+  field_common_points:
+    type: string_textarea
+    weight: 5
+    region: content
+    settings:
+      rows: 3
+      placeholder: ''
+    third_party_settings: {  }
+  field_disputed_points:
+    type: string_textarea
+    weight: 6
+    region: content
+    settings:
+      rows: 3
+      placeholder: ''
+    third_party_settings: {  }
+  title:
+    type: string_textfield
+    weight: 0
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+  status:
+    type: boolean_checkbox
+    weight: 4
+    region: content
+    settings:
+      display_label: true
+    third_party_settings: {  }
+hidden:
+  created: true
+  field_featured: true
+  promote: true
+  sticky: true
+  uid: true

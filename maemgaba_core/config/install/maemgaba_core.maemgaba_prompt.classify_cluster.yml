@@ -1,0 +1,48 @@
+langcode: en
+status: true
+dependencies: {  }
+id: classify_cluster
+label: 'Classify and cluster article'
+description: 'Scores an article''s editorial bias and decides whether it belongs to an existing event or starts a new one.'
+operation: classify_cluster
+system_prompt: 'You are the editorial classification engine of the [site_name] news aggregator. Always answer with valid JSON and no text outside the JSON.'
+template: |
+  Analyze the text of the following news article and classify it.
+
+  HEADLINE: [headline]
+  [text_status]
+
+  ARTICLE TEXT:
+  "[article_text]"
+
+  CANDIDATE FACTUAL EVENTS TO MATCH (they may be unrelated to the article; judge by content, do not assume; when a similarity is given, higher means semantically closer, but the decision is yours):
+  [existing_events]
+
+  Answer strictly in JSON with these keys:
+  - "matched_event_id": the integer ID of the matching event if the article covers EXACTLY the same political/economic fact; otherwise 0.
+  - "bias_score": the editorial bias as an integer from -2 to 2: -2 clearly left, -1 leans left, 0 center/neutral, 1 leans right, 2 clearly right.
+  - "bias_confidence": your confidence in bias_score, from 0 to 1.
+  - "bias_evidence": up to 3 short quotes copied verbatim from the text that support bias_score (empty list if the text is purely factual).
+  - "micro_summary": a two-paragraph executive summary focused on this outlet's ideological/editorial angle.
+  - "event_title": if matched_event_id is 0, a 100% factual, concise, adjective-free title for the new event; otherwise an empty string.
+  - "neutral_summary": if matched_event_id is 0, a fully neutral news summary limited to undisputed facts; otherwise an empty string.
+  - "social_relevance": strictly "irrelevant", "maybe" or "relevant".
+  - "topic": the main topic, strictly one of: [topic_list].
+  - "relevance_reason": one short sentence (max. 20 words) justifying the relevance.
+  Write every text value in [output_language].
+
+  SOCIAL RELEVANCE CRITERIA
+  Focus: political and social events that affect a large share of society.
+  - "relevant": politics and government, elections, economy that affects citizens, courts, public safety, human rights, international affairs with national impact, labor. Mark as relevant EVEN IF only one outlet reported it.
+  - "maybe": a real event with narrow or uncertain social reach (regional incident, light news that only matters if many outlets cover it).
+  - "irrelevant": entertainment, celebrities, sports results and gossip, lifestyle, listicles ("X things that..."), shopping tips, betting, viral curiosities, health tips.
+
+  BIAS EXAMPLES (hard cases)
+  Bias lives in the FRAMING (word choice, who is quoted, what is stressed or left out), not in the fact itself: the same story can be covered with any bias.
+  - Left (-1/-2): stresses social rights, inequality or the impact on workers and minorities; quotes unions, social movements or left-leaning officials favorably; frames austerity, policing or court action against the left as excessive or politically motivated.
+  - Right (1/2): stresses fiscal responsibility, free markets, public order or tradition; quotes business, police or right-leaning officials favorably; frames public spending, identity policies or court action against the right as excessive or politically motivated.
+  - Center (0): reports verifiable facts without value-laden adjectives, gives several sides comparable weight, or is too factual to carry framing (official data, schedules, vote results).
+  SCALE: 0 is the starting point. Keep 0 whenever the text fits the Center criterion above, including when the subject itself favors one side but the framing does not. Use -1 or 1 only when the framing clearly leans to one side. Reserve -2 or 2 for militant framing sustained through the whole text (campaign language, strings of value-laden adjectives, the other side absent or ridiculed). When unsure between 0 and ±1, choose 0; between ±1 and ±2, choose ±1.
+rubric_version: ''
+blind: false
+anchors: {  }

@@ -1,0 +1,8 @@
+# Install once with `pip install pre-commit && pre-commit install`
+# (or `brew install pre-commit`). The hook refuses a commit that stages a
+# secret, using the same rules CI runs.
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks

@@ -1,0 +1,20 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_partial_text
+    - node.type.card
+id: node.card.field_partial_text
+field_name: field_partial_text
+entity_type: node
+bundle: card
+label: 'Partial Text'
+description: "True when classification used only the headline and abstract because the source body was paywalled or couldn't be fetched; the display layer shows a headline-only badge."
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  on_label: 'Yes'
+  off_label: 'No'
+field_type: boolean

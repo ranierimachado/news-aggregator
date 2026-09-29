@@ -1,0 +1,6 @@
+maemgaba_monitor.costs:
+  title: 'News Engine: AI costs'
+  description: 'Daily and monthly AI cost/usage of the News Engine pipeline.'
+  route_name: maemgaba_monitor.costs
+  parent: system.admin_config_services
+  weight: 6

@@ -1,0 +1,20 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_micro_summary
+    - node.type.card
+  module:
+    - text
+id: node.card.field_micro_summary
+field_name: field_micro_summary
+entity_type: node
+bundle: card
+label: 'Micro Summary'
+description: 'The concise, unbiased summary of the perspective written by the AI. Optional: sites that display field_framing_line instead of a per-article summary do not populate this.'
+required: false
+translatable: false
+default_value: {}
+default_value_callback: ''
+settings: {}
+field_type: text_long

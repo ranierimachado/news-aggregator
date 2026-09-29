@@ -1,0 +1,11 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - maemgaba_core
+    - node
+id: maemgaba_delete_event_cascade
+label: Delete event and its cards
+type: node
+plugin: maemgaba_delete_event_cascade
+configuration: {  }

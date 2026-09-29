@@ -1,0 +1,168 @@
+{#
+/**
+ * @file
+ * Event node, full view: the neutral summary, consensus box, spectrum bar
+ * and one column of perspective cards per configured bucket.
+ *
+ * Provided by maemgaba_core; a theme overrides it by copying this file to
+ * its own templates/ directory (see docs/maemgaba_core-module-guide.md).
+ *
+ * Variables beyond core's node template (all set in
+ * EventPreprocessor::preprocessNode()):
+ * - buckets: list of {key, label, short_label, color, count, perc, width,
+ *   cards[CARD]} in spectrum order. Only perspectives are counted and listed
+ *   here: reprints hang under the card they copy, opinion has its own strip.
+ *   CARD = {id, title, source_name, source_initials, bias_label, bias,
+ *   micro_summary, framing_line, partial_text, section, original_url,
+ *   link_url (the href to use: /out/{card} when clicks are logged),
+ *   time_ago, divergence (null or {prior, score, delta, usual, story,
+ *   usual_key, story_key, label}), syndicated[{title, source_name, via,
+ *   link_url, original_url, time_ago}]}.
+ * - bucket_count: number of buckets (drives the column grid).
+ * - spectrum_bar: render array (spectrum_bar theme hook).
+ * - total_sources: every article listed (reprints and opinion included).
+ * - total_perspectives: articles counted in the distribution.
+ * - opinion_cards: list of CARD (bias fields empty when unscored);
+ *   opinion_count; syndicated_count.
+ * - view_beacon_url: POST target of the view beacon, '' when clicks are not
+ *   logged.
+ * - consensus_grid: render array, or empty when nothing is synthesised yet.
+ * - common_points, disputed_points: the raw point lists.
+ * - is_home_top5: TRUE when the event is eligible for on-demand consensus
+ *   synthesis and none exists yet (renders the JS trigger placeholder).
+ * - event_date: uppercased site date (maemgaba_day format).
+ * - ai_label: the site's label for the AI-generated synthesis (settings
+ *   ai_label, @version = rubric version), '' when unset.
+ *
+ * Display policy (settings card_display) is applied in the preprocessor:
+ * card.micro_summary arrives empty where the site withholds per-article
+ * summaries, card.framing_line empty unless the site opts in. The
+ * headline-only badge shows for cards classified from partial text.
+ */
+#}
+{% if view_beacon_url %}
+  {% set attributes = attributes.setAttribute('data-view-beacon', view_beacon_url) %}
+{% endif %}
+<article{{ attributes.addClass('node-event', 'maemgaba-event-wrapper') }}>
+ <div class="event-panel">
+
+  {# 1. Event Header #}
+  <header class="event-header">
+    <div class="event-status-badge">
+      <span class="status-dot"></span>
+      {{ 'Tracked event'|t|upper }}
+    </div>
+    {# h2, not h1: the masthead owns the page's one h1 (site branding), and
+       the Page Title block already renders the event's own title above this
+       template's output as an h2. #}
+    <h2 class="event-title">{{ label }}</h2>
+    <div class="event-neutral-summary">
+      {{ content.field_neutral_summary }}
+    </div>
+    <div class="event-meta-line">
+      <span class="event-date">{{ event_date }}</span>
+      <span class="meta-separator">·</span>
+      <span class="event-sources-count">{{ total_sources }} {{ 'Sources'|t|upper }}</span>
+      <span class="meta-separator">·</span>
+      <span class="event-perspectives-count">{{ total_perspectives }} {{ 'Perspectives'|t|upper }}</span>
+    </div>
+  </header>
+
+  {# 1b. Consensus / Dispute box #}
+  {% if common_points is not empty or disputed_points is not empty %}
+    {{ consensus_grid }}
+  {% elseif is_home_top5 %}
+    <div class="consensus-grid consensus-grid--pending" data-consensus-trigger data-event-id="{{ node.id }}" data-consensus-url="{{ path('maemgaba_core.consensus_synthesize', {'node': node.id}) }}">
+      <p class="consensus-loading">{{ 'Synthesizing common ground and disputed points…'|t }}</p>
+    </div>
+  {% endif %}
+  {% if ai_label %}
+    <p class="event-ai-label">{{ ai_label }}</p>
+  {% endif %}
+
+  {# 2. Spectrum Bar: one segment per configured bucket, exact shares. #}
+  <div class="spectrum-section">
+    {{ spectrum_bar }}
+    <div class="spectrum-labels">
+      {% for bucket in buckets %}
+        <span class="spectrum-label-{{ bucket.key }}">{{ bucket.label }} · {{ bucket.count }}</span>
+      {% endfor %}
+    </div>
+  </div>
+
+  {# 3. Perspective Columns: one per bucket. #}
+  <div class="maemgaba-perspective-grid" style="--bucket-count: {{ bucket_count }}">
+    {% for bucket in buckets %}
+    <div class="bias-column bias-{{ bucket.key }}" style="--bucket-color: var(--bucket-{{ bucket.key }}-color, {{ bucket.color }})">
+      <div class="column-header">
+        <div class="column-header-left">
+          <span class="bias-dot {{ bucket.key }}-dot"></span>
+          <h2>{{ bucket.label }}</h2>
+        </div>
+        <span class="column-count">{{ bucket.count }}</span>
+      </div>
+      <div class="cards-stack">
+        {% if bucket.cards is not empty %}
+          {% for card in bucket.cards %}
+            <div class="maemgaba-card-teaser card-bias-{{ bucket.key }}">
+              <div class="card-header-row">
+                <div class="card-source-info">
+                  <span class="source-avatar avatar-{{ bucket.key }}">{{ card.source_initials }}</span>
+                  <span class="source-name">{{ card.source_name }}</span>
+                </div>
+                <span class="bias-badge badge-{{ bucket.key }}">{{ card.bias_label }}</span>
+              </div>
+              <h3 class="card-headline">{% if card.link_url %}<a href="{{ card.link_url }}" target="_blank" rel="noopener noreferrer nofollow">{{ card.title }}</a>{% else %}{{ card.title }}{% endif %}</h3>
+              {% if card.framing_line %}<p class="card-framing-line">{{ card.framing_line }}</p>{% endif %}
+              {% if card.micro_summary %}<p class="card-micro-summary">{{ card.micro_summary }}</p>{% endif %}
+              {% if card.partial_text %}<p class="card-partial-badge">{{ 'Headline only'|t }}<span class="visually-hidden">: {{ 'classified from the headline and feed abstract'|t }}</span></p>{% endif %}
+              {% if card.divergence %}<p class="card-divergence card-divergence--{{ card.divergence.story_key }}">{{ card.divergence.label }}</p>{% endif %}
+              <div class="card-footer">
+                {% if card.link_url %}
+                  <a class="btn-original-link link-{{ bucket.key }}" href="{{ card.link_url }}" target="_blank" rel="noopener noreferrer nofollow">
+                    {{ 'Read the original ↗'|t }}
+                  </a>
+                {% endif %}
+                <span class="card-time-ago">{{ card.time_ago }}</span>
+              </div>
+              {% if card.syndicated is not empty %}
+                <ul class="card-syndicated">
+                  {% for reprint in card.syndicated %}
+                    <li class="card-syndicated__item">
+                      {% if reprint.link_url %}<a href="{{ reprint.link_url }}" target="_blank" rel="noopener noreferrer nofollow">{{ reprint.source_name }}</a>{% else %}{{ reprint.source_name }}{% endif %}
+                      <span class="card-syndicated__via">{{ 'via @name'|t({'@name': reprint.via}) }}</span>
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="no-perspective">{{ 'No perspective identified with this bias.'|t }}</p>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+ {% if opinion_cards is not empty %}
+  <section class="event-opinion-strip">
+    <h2 class="event-opinion-strip__title">{{ 'Opinion'|t }} · {{ opinion_count }}</h2>
+    <p class="event-opinion-strip__note">{{ 'Opinion pieces are classified but not counted in the coverage distribution.'|t }}</p>
+    <ul class="event-opinion-strip__list">
+      {% for card in opinion_cards %}
+        <li class="event-opinion-strip__item{% if card.bias %} card-bias-{{ card.bias }}{% endif %}">
+          <span class="source-name">{{ card.source_name }}</span>
+          {% if card.bias_label %}<span class="bias-badge{% if card.bias %} badge-{{ card.bias }}{% endif %}">{{ card.bias_label }}</span>{% endif %}
+          {% if card.link_url %}<a class="card-headline" href="{{ card.link_url }}" target="_blank" rel="noopener noreferrer nofollow">{{ card.title }}</a>{% else %}<span class="card-headline">{{ card.title }}</span>{% endif %}
+          {% if card.partial_text %}<span class="card-partial-badge">{{ 'Headline only'|t }}</span>{% endif %}
+          {% if card.divergence %}<span class="card-divergence card-divergence--{{ card.divergence.story_key }}">{{ card.divergence.label }}</span>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+ {% endif %}
+
+  <a class="event-suggest-link" href="{{ path('maemgaba_core.suggest', {'event': node.id}) }}">{{ 'Spotted something wrong? Suggest a correction →'|t }}</a>
+ </div>
+</article>

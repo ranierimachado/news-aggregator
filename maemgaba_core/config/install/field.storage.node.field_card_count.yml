@@ -1,0 +1,17 @@
+langcode: pt-br
+status: true
+dependencies:
+  module:
+    - node
+id: node.field_card_count
+field_name: field_card_count
+entity_type: node
+type: integer
+module: core
+settings:
+  unsigned: true
+  size: normal
+cardinality: 1
+translatable: false
+persist_with_no_fields: false
+custom_storage: false

@@ -1,0 +1,509 @@
+<?php
+
+/**
+ * @file
+ * Hook implementations for News Engine core.
+ */
+
+declare(strict_types=1);
+
+use Drupal\Core\Cache\Cache;
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\Render\Markup;
+use Drupal\Core\Url;
+use Drupal\maemgaba_core\BiasScore;
+use Drupal\maemgaba_core\Service\ClickLog;
+use Drupal\maemgaba_core\Service\SuggestionManager;
+use Drupal\maemgaba_core\Vdb\MariaDbVectorProvider;
+use Drupal\node\NodeInterface;
+
+/**
+ * Implements hook_entity_base_field_info().
+ *
+ * Adds maemgaba_search_until to user: the timestamp until which the
+ * account may use /search, enforced by SearchAccessCheck. A base field (not
+ * a configurable field) keeps this out of config/sync entirely — it's pure
+ * runtime state, set on evaluator self-registration and extended by
+ * SuggestionManager::decide() on accepted corrections.
+ */
+function maemgaba_core_entity_base_field_info(EntityTypeInterface $entity_type): array {
+  if ($entity_type->id() !== 'user') {
+    return [];
+  }
+  $fields['maemgaba_search_until'] = _maemgaba_core_search_until_field();
+  return $fields;
+}
+
+/**
+ * The user base field that stores until when an account may use /search.
+ */
+function _maemgaba_core_search_until_field(): BaseFieldDefinition {
+  return BaseFieldDefinition::create('timestamp')
+    ->setLabel(t('Search access until'))
+    ->setDescription('Unix timestamp until which this user may use semantic search. 0 or past = no access.')
+    ->setDefaultValue(0)
+    ->setDisplayConfigurable('form', FALSE)
+    ->setDisplayConfigurable('view', FALSE);
+}
+
+/**
+ * Implements hook_mail().
+ *
+ * Two keys: suggestion_accepted, sent by SuggestionManager::decide() when a
+ * "suggest a correction" submission is accepted; and contact_message, sent by
+ * ContactForm on every /contato submission.
+ */
+function maemgaba_core_mail(string $key, array &$message, array $params): void {
+  if ($key === 'suggestion_accepted') {
+    /** @var object $suggestion */
+    $suggestion = $params['suggestion'];
+    $type_labels = SuggestionManager::typeOptions();
+
+    $message['subject'] = t('Your correction was applied — @site', ['@site' => \Drupal::config('system.site')->get('name')]);
+
+    $body = t('Thank you! The correction you sent (@type) was reviewed and applied.', [
+      '@type' => $type_labels[$suggestion->type] ?? $suggestion->type,
+    ]);
+    $message['body'][] = $body;
+
+    if (!empty($suggestion->moderation_note)) {
+      $message['body'][] = t('Note from the team: @note', ['@note' => $suggestion->moderation_note]);
+    }
+    if (!empty($params['renewed'])) {
+      $message['body'][] = t('As a thank-you, your semantic search access (@url) was extended by 10 days.', ['@url' => Url::fromRoute('maemgaba_core.busca', [], ['absolute' => TRUE])->toString()]);
+    }
+    return;
+  }
+
+  if ($key === 'contact_message') {
+    $message['subject'] = t('New contact message — @site', ['@site' => \Drupal::config('system.site')->get('name')]);
+    $message['body'][] = t('From: @name <@email>', ['@name' => $params['name'], '@email' => $params['email']]);
+    $message['body'][] = $params['message'];
+  }
+}
+
+/**
+ * Implements hook_theme().
+ *
+ * Every hook that renders engine data belongs to the module, with its
+ * template in templates/. A theme overrides any of them by copying the
+ * template into its own templates/ directory (standard Drupal), and styles
+ * the markup; see docs/maemgaba_core-module-guide.md ("Templates and theme
+ * hooks"). node--event and node--event--teaser are suggestions of core's
+ * node hook, so they keep core's node preprocessing and variables.
+ */
+function maemgaba_core_theme(array $existing, string $type, string $theme, string $path): array {
+  return [
+    'node__event' => [
+      'base hook' => 'node',
+      'render element' => 'elements',
+      'template' => 'node--event',
+    ],
+    'node__event__teaser' => [
+      'base hook' => 'node',
+      'render element' => 'elements',
+      'template' => 'node--event--teaser',
+    ],
+    'spectrum_bar' => [
+      'variables' => ['segments' => [], 'size' => ''],
+    ],
+    'event_consensus_grid' => [
+      'variables' => ['common_points' => [], 'disputed_points' => []],
+    ],
+    'source_list' => [
+      'variables' => ['sources' => [], 'buckets' => []],
+    ],
+    'sources_page' => [
+      'variables' => ['source_list' => []],
+    ],
+    'methodology_page' => [
+      'variables' => ['methodology' => [], 'buckets' => [], 'contributors' => [], 'click_stats' => NULL],
+    ],
+    'suggestion_thanks' => [
+      'variables' => ['site_name' => ''],
+    ],
+    'ask_page' => [
+      'variables' => [
+        'state' => 'intro',
+        'question' => '',
+        'examples' => [],
+        'result' => NULL,
+        'max_length' => 300,
+        'max_rows' => 200,
+        'form_action' => '',
+        'methodology_url' => '',
+        'flood_limit' => 20,
+        'flood_minutes' => 60,
+      ],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_menu_links_discovered_alter().
+ *
+ * The "Ask" main-menu link exists only while "Ask the data" is on.
+ */
+function maemgaba_core_menu_links_discovered_alter(array &$links): void {
+  if (!\Drupal::config('maemgaba_core.settings')->get('ask.enabled')) {
+    unset($links['maemgaba_core.nav_ask']);
+  }
+}
+
+/**
+ * Implements hook_theme_registry_alter().
+ *
+ * The node--event templates are registered by this module as suggestions of
+ * 'node' (see maemgaba_core_theme()). The registry inherits the base hook's
+ * preprocess functions for them, but not its initial preprocess callback,
+ * which is what builds label, content, url and the other node variables:
+ * copy it over so the templates get exactly what core's node template gets.
+ */
+function maemgaba_core_theme_registry_alter(array &$theme_registry): void {
+  foreach (['node__event', 'node__event__teaser'] as $hook) {
+    if (isset($theme_registry[$hook], $theme_registry['node']) && empty($theme_registry[$hook]['initial preprocess'])) {
+      $theme_registry[$hook]['initial preprocess'] = $theme_registry['node']['initial preprocess'] ?? NULL;
+    }
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for node templates.
+ *
+ * Event nodes get their bucket columns, spectrum bar, consensus box, topic
+ * and dates from EventPreprocessor; the theme has nothing to compute.
+ */
+function maemgaba_core_preprocess_node(array &$variables): void {
+  \Drupal::service('maemgaba_core.event_preprocessor')->preprocessNode($variables);
+}
+
+/**
+ * Implements hook_page_attachments().
+ *
+ * Publishes each spectrum bucket's colour as a CSS custom property
+ * (--bucket-KEY-color) on every page, from maemgaba_core.spectrum, so the
+ * engine's templates and css/engine.css never hardcode a bucket key or a
+ * brand colour. Themes load their CSS after this inline block and may
+ * redefine any of these properties on :root.
+ */
+function maemgaba_core_page_attachments(array &$attachments): void {
+  $declarations = [];
+  foreach (\Drupal::service('maemgaba_core.spectrum')->buckets() as $bucket) {
+    // Config values, but they land in a <style> block: accept only a hex
+    // colour or a CSS colour keyword.
+    if (preg_match('/^[a-z0-9_-]+$/', (string) $bucket['key']) && preg_match('/^(#[0-9a-f]{3,8}|[a-z]+)$/i', (string) $bucket['color'])) {
+      $declarations[] = '--bucket-' . $bucket['key'] . '-color:' . $bucket['color'];
+    }
+  }
+  $attachments['#attached']['html_head'][] = [
+    [
+      '#tag' => 'style',
+      '#value' => Markup::create(':root{' . implode(';', $declarations) . '}'),
+    ],
+    'maemgaba_core_bucket_colors',
+  ];
+  $attachments['#cache']['tags'][] = 'config:maemgaba_core.spectrum';
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_view_alter() for nodes.
+ *
+ * Event teasers drop the "Destaque" banner on the /events listing but keep it
+ * on the home hero, so their render cache must vary by route — otherwise both
+ * routes share one cached variant. (This is a module alter; themes don't
+ * receive it, so it lives here rather than in the theme.)
+ */
+function maemgaba_core_node_view_alter(array &$build, NodeInterface $node, EntityViewDisplayInterface $display): void {
+  if ($node->bundle() === 'event') {
+    // Event teasers vary by route (home hero vs grid) and display card-derived
+    // stats + coverage ordering, so key their cache by route and rebuild them
+    // whenever any card changes.
+    $build['#cache']['contexts'][] = 'route.name';
+    $build['#cache']['tags'][] = 'node_list:card';
+  }
+}
+
+/**
+ * Implements hook_node_update().
+ *
+ * Keeps an event's derived relevance/topic fresh when one of its cards is
+ * edited (e.g. unpublished or re-tagged from the bulk-review view).
+ */
+function maemgaba_core_node_update(NodeInterface $node): void {
+  _maemgaba_core_rollup_parent_event($node);
+}
+
+/**
+ * Implements hook_node_delete().
+ *
+ * Recomputes the parent event after a card is deleted (bulk pruning).
+ */
+function maemgaba_core_node_delete(NodeInterface $node): void {
+  _maemgaba_core_rollup_parent_event($node);
+  if ($node->bundle() === 'card') {
+    \Drupal::service('maemgaba_core.source_text_store')->delete((int) $node->id());
+    \Drupal::service('maemgaba_core.syndication')->forget((int) $node->id());
+  }
+}
+
+/**
+ * Implements hook_cron().
+ *
+ * Purges private source text older than overlap_guard.retention_days, and
+ * lets pages showing the click-through aggregate (the methodology page)
+ * pick up new numbers: the page cache ignores max-age, so they carry the
+ * ClickLog cache tag, refreshed here at most hourly.
+ */
+function maemgaba_core_cron(): void {
+  $days = (int) \Drupal::config('maemgaba_core.settings')->get('overlap_guard.retention_days');
+  if ($days > 0) {
+    \Drupal::service('maemgaba_core.source_text_store')->purgeOlderThan($days);
+  }
+  if (\Drupal::service('maemgaba_core.click_log')->enabled()) {
+    $state = \Drupal::state();
+    $now = \Drupal::time()->getRequestTime();
+    if ($now - (int) $state->get('maemgaba_core.click_stats_refreshed', 0) >= 3600) {
+      Cache::invalidateTags([ClickLog::CACHE_TAG]);
+      $state->set('maemgaba_core.click_stats_refreshed', $now);
+    }
+  }
+}
+
+/**
+ * Allowed-values callback for field_topic (storage setting).
+ *
+ * Topics are site config (maemgaba_core.topics), not field storage, so a
+ * locale pack can ship its own vocabulary. Any static list still present in
+ * the storage YAML is ignored while this callback is set (core refuses to
+ * drop allowed values that are in use, so an existing site keeps its old
+ * list there, inert).
+ *
+ * @see callback_allowed_values_function()
+ */
+function maemgaba_core_topic_allowed_values(FieldStorageDefinitionInterface $definition, ?FieldableEntityInterface $entity = NULL, ?bool &$cacheable = NULL): array {
+  return \Drupal::service('maemgaba_core.topics')->options();
+}
+
+/**
+ * Implements hook_entity_presave().
+ *
+ * Keeps the legacy left/center/right list fields in step with the numeric
+ * score for one release (see BiasScore): score → list always; list → score
+ * only when the score is empty, so an old writer still produces a score.
+ *
+ * @todo remove with field_article_bias / field_default_bias in the next
+ * release.
+ */
+function maemgaba_core_entity_presave(EntityInterface $entity): void {
+  if (!$entity instanceof FieldableEntityInterface) {
+    return;
+  }
+  $pairs = [
+    'node:card' => ['field_bias_score', 'field_article_bias'],
+    'node:feed_source' => ['field_default_bias_score', 'field_article_bias'],
+    'taxonomy_term:sources' => ['field_default_bias_score', 'field_default_bias'],
+  ];
+  $pair = $pairs[$entity->getEntityTypeId() . ':' . $entity->bundle()] ?? NULL;
+  if (!$pair || !$entity->hasField($pair[0]) || !$entity->hasField($pair[1])) {
+    return;
+  }
+  [$score_field, $legacy_field] = $pair;
+
+  $score = BiasScore::normalize($entity->get($score_field)->value);
+  if ($score === NULL) {
+    $score = BiasScore::fromLegacy($entity->get($legacy_field)->value);
+    $entity->set($score_field, $score);
+  }
+  $entity->set($legacy_field, $score !== NULL ? BiasScore::toLegacy($score) : NULL);
+}
+
+/**
+ * Rolls the parent event up from its cards, when $node is a card.
+ *
+ * Card inserts are handled explicitly by the processing pipeline, so only
+ * updates and deletes route through here.
+ */
+function _maemgaba_core_rollup_parent_event(NodeInterface $node): void {
+  if ($node->bundle() !== 'card' || !$node->hasField('field_parent_event')) {
+    return;
+  }
+  $event_id = $node->get('field_parent_event')->target_id;
+  if ($event_id) {
+    \Drupal::service('maemgaba_core.event_relevance')->recalculateById($event_id);
+  }
+}
+
+/**
+ * Batch op: harvest a single feed. Used by the pipeline admin form.
+ */
+function _maemgaba_core_harvest_batch_op(array $feed, array &$context): void {
+  $count = \Drupal::service('maemgaba_core.ingestion_engine')->harvestSingle($feed);
+  $context['results']['total'] = ($context['results']['total'] ?? 0) + $count;
+  $context['message'] = t('Harvesting @name… (@n new)', ['@name' => $feed['name'], '@n' => $count]);
+}
+
+/**
+ * Batch finished: harvest.
+ */
+function _maemgaba_core_harvest_batch_finished(bool $success, array $results, array $operations): void {
+  \Drupal::messenger()->addStatus($success
+    ? t('Harvest finished: @n new queue item(s).', ['@n' => $results['total'] ?? 0])
+    : t('The harvest failed.'));
+}
+
+/**
+ * Batch op: process a chunk of the inbound queue, repeating until drained.
+ *
+ * Items the AI cannot classify stay in the queue, so a stall counter stops the
+ * loop after several passes with no progress instead of looping forever.
+ */
+function _maemgaba_core_process_batch_op(array &$context): void {
+  $processor = \Drupal::service('maemgaba_core.queue_processor');
+  $stats = \Drupal::service('maemgaba_core.stats');
+
+  if (!isset($context['sandbox']['total'])) {
+    $context['sandbox']['total'] = $stats->queueDepth();
+    $context['sandbox']['prev'] = PHP_INT_MAX;
+    $context['sandbox']['stall'] = 0;
+    $context['results']['processed'] = 0;
+    $context['results']['events'] = 0;
+  }
+  if ($context['sandbox']['total'] == 0) {
+    $context['finished'] = 1;
+    return;
+  }
+
+  $summary = $processor->processBatch(5);
+  $context['results']['processed'] += $summary['processed'];
+  $context['results']['events'] += $summary['events_created'];
+
+  $remaining = $stats->queueDepth();
+  $context['sandbox']['stall'] = ($remaining >= $context['sandbox']['prev']) ? $context['sandbox']['stall'] + 1 : 0;
+  $context['sandbox']['prev'] = $remaining;
+  $context['message'] = t('Processing queue… @n left', ['@n' => $remaining]);
+
+  $done = $context['sandbox']['total'] - $remaining;
+  $context['finished'] = ($remaining <= 0 || $context['sandbox']['stall'] >= 3)
+    ? 1
+    : min(0.99, max(0.01, $done / max(1, $context['sandbox']['total'])));
+}
+
+/**
+ * Batch finished: process.
+ */
+function _maemgaba_core_process_batch_finished(bool $success, array $results, array $operations): void {
+  \Drupal::messenger()->addStatus(t('Processing finished: @p card(s), @e new event(s).', [
+    '@p' => $results['processed'] ?? 0,
+    '@e' => $results['events'] ?? 0,
+  ]));
+}
+
+/**
+ * Batch op: backfill relevance on unrated cards, repeating until none remain.
+ */
+function _maemgaba_core_backfill_batch_op(array &$context): void {
+  $processor = \Drupal::service('maemgaba_core.queue_processor');
+  $stats = \Drupal::service('maemgaba_core.stats');
+
+  if (!isset($context['sandbox']['total'])) {
+    $context['sandbox']['total'] = $stats->unratedCardCount();
+    $context['sandbox']['prev'] = PHP_INT_MAX;
+    $context['sandbox']['stall'] = 0;
+    $context['results']['classified'] = 0;
+    $context['results']['failed'] = 0;
+  }
+  if ($context['sandbox']['total'] == 0) {
+    $context['finished'] = 1;
+    return;
+  }
+
+  $summary = $processor->backfillRelevance(20);
+  $context['results']['classified'] += $summary['classified'];
+  $context['results']['failed'] += $summary['failed'];
+
+  $remaining = $summary['remaining'];
+  $context['sandbox']['stall'] = ($remaining >= $context['sandbox']['prev']) ? $context['sandbox']['stall'] + 1 : 0;
+  $context['sandbox']['prev'] = $remaining;
+  $context['message'] = t('Classifying… @n left', ['@n' => $remaining]);
+
+  $done = $context['sandbox']['total'] - $remaining;
+  $context['finished'] = ($remaining <= 0 || $context['sandbox']['stall'] >= 3)
+    ? 1
+    : min(0.99, max(0.01, $done / max(1, $context['sandbox']['total'])));
+}
+
+/**
+ * Batch finished: backfill.
+ */
+function _maemgaba_core_backfill_batch_finished(bool $success, array $results, array $operations): void {
+  \Drupal::messenger()->addStatus(t('Backfill finished: @c classified, @f failed.', [
+    '@c' => $results['classified'] ?? 0,
+    '@f' => $results['failed'] ?? 0,
+  ]));
+}
+
+/**
+ * Batch op: review a chunk of unreviewed cards, repeating until none remain.
+ */
+function _maemgaba_core_review_batch_op(array &$context): void {
+  $processor = \Drupal::service('maemgaba_core.queue_processor');
+  $stats = \Drupal::service('maemgaba_core.stats');
+
+  if (!isset($context['sandbox']['total'])) {
+    $context['sandbox']['total'] = $stats->unreviewedCardCount();
+    $context['sandbox']['prev'] = PHP_INT_MAX;
+    $context['sandbox']['stall'] = 0;
+    $context['results']['reviewed'] = 0;
+    $context['results']['corrected'] = 0;
+    $context['results']['failed'] = 0;
+  }
+  if ($context['sandbox']['total'] == 0) {
+    $context['finished'] = 1;
+    return;
+  }
+
+  $summary = $processor->reviewCards(20);
+  $context['results']['reviewed'] += $summary['reviewed'];
+  $context['results']['corrected'] += $summary['corrected'];
+  $context['results']['failed'] += $summary['failed'];
+
+  $remaining = $summary['remaining'];
+  $context['sandbox']['stall'] = ($remaining >= $context['sandbox']['prev']) ? $context['sandbox']['stall'] + 1 : 0;
+  $context['sandbox']['prev'] = $remaining;
+  $context['message'] = t('Reviewing… @n left', ['@n' => $remaining]);
+
+  $done = $context['sandbox']['total'] - $remaining;
+  $context['finished'] = ($remaining <= 0 || $context['sandbox']['stall'] >= 3)
+    ? 1
+    : min(0.99, max(0.01, $done / max(1, $context['sandbox']['total'])));
+}
+
+/**
+ * Batch finished: review.
+ */
+function _maemgaba_core_review_batch_finished(bool $success, array $results, array $operations): void {
+  \Drupal::messenger()->addStatus(t('Review finished: @r reviewed, @c corrected, @f failed.', [
+    '@r' => $results['reviewed'] ?? 0,
+    '@c' => $results['corrected'] ?? 0,
+    '@f' => $results['failed'] ?? 0,
+  ]));
+}
+
+/**
+ * Implements hook_ai_vdb_provider_info_alter().
+ *
+ * Swaps ai_vdb_provider_mariadb's plugin for MariaDbVectorProvider, which
+ * deletes every old row before a re-index (the contrib lookup stops at 10).
+ */
+function maemgaba_core_ai_vdb_provider_info_alter(array &$definitions): void {
+  $contrib = 'Drupal\ai_vdb_provider_mariadb\Plugin\VdbProvider\MariaDBProvider';
+  if (isset($definitions['mariadb']) && is_array($definitions['mariadb'])
+    && ($definitions['mariadb']['class'] ?? NULL) === $contrib && class_exists($contrib)) {
+    $definitions['mariadb']['class'] = MariaDbVectorProvider::class;
+  }
+}

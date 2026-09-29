@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="news-engine">
+  <description>Drupal coding standard for the news engine modules. Run from the repo root with a consuming site's vendor/bin/phpcs (drupal/coder comes with drupal/core-dev).</description>
+
+  <file>maemgaba_core</file>
+  <file>maemgaba_monitor</file>
+
+  <arg name="extensions" value="php,module,inc,install,theme,yml"/>
+  <arg name="colors"/>
+  <arg value="sp"/>
+
+  <exclude-pattern>*/vendor/*</exclude-pattern>
+  <exclude-pattern>*/build/*</exclude-pattern>
+  <exclude-pattern>*/translations/*</exclude-pattern>
+
+  <rule ref="Drupal">
+    <!-- This package is not built by drupal.org packaging, so the info.yml version key is meaningful here. -->
+    <exclude name="Drupal.InfoFiles.AutoAddedKeys"/>
+  </rule>
+</ruleset>

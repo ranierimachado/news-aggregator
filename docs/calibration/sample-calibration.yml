@@ -1,0 +1,26 @@
+# Sample input for `drush maemgaba:calibrate`. `drush maemgaba:calibration-sample`
+# writes a file in this shape from a site's live feeds; this hand-written one
+# only shows the format, its URLs do not resolve (.example).
+#
+# expected_score = the outlet's published prior (-2..+2).
+# hand_label     = a reviewer's own score for the article, when there is one.
+items:
+  - url: https://www.capitalledger.example/politics/harbor-renewal-act-passes
+    outlet: The Capital Ledger
+    expected_score: 0
+    hand_label: 0
+    title: 'Senate passes harbor dredging bill after months of delay'
+  - url: https://www.harbortimes.example/national/dredging-windfall
+    outlet: Harbor Times
+    expected_score: -1
+    hand_label: -1
+    title: 'Dredging bill hands port operators a windfall while coastal towns wait'
+  - url: https://www.ironbridgereview.example/harbor-bill-ends-obstruction
+    outlet: Ironbridge Review
+    expected_score: 2
+    hand_label: 1
+    title: 'Harbor bill finally ends years of obstruction on port investment'
+  - url: https://www.northgatenews.example/fire-crews-praised
+    outlet: Northgate News
+    expected_score: 1
+    title: 'Fire crews praised for fast containment of Northgate blaze'
